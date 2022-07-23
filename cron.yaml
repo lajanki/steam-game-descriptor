@@ -1,0 +1,10 @@
+cron:
+- description: "Game descriptor: Weekly model retrain"
+  url: /_train
+  schedule: every tuesday 06:00
+  target: game-descriptor
+
+- description: "Game descriptor: batch parse new description content"
+  url: /_parse_descriptions
+  schedule: every 10 minutes from 01:00 to 01:15  # run twice a day
+  target: game-descriptor

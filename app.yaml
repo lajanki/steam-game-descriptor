@@ -1,0 +1,6 @@
+
+service: game-descriptor
+runtime: python310
+entrypoint: gunicorn -b :$PORT main:app --timeout 600
+env_variables:
+  ENV: prod

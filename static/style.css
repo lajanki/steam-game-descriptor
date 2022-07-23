@@ -1,0 +1,127 @@
+div.page-header {
+	margin-bottom: 0px;
+	color: black;
+	margin-top: 25px;
+	margin-left: 13%;
+	margin-right: 13%;
+}
+
+div.page-header p {
+	font-size:18px;
+}
+
+ul.nav {
+	margin-left: 15%;
+	margin-right: 15%;
+	margin-bottom: 25px;
+}
+
+a.nav-link {
+	color: #9c5b84;
+}
+
+li.nav-item:hover {
+	background-color: #bbb2bb
+}
+
+ul.nav a:hover {
+	color: #9c5b84 !important; 
+}
+
+.card {
+	background-color:rgba(162, 169, 202, 0.51);
+	margin-left: 10%;
+	margin-right: 10%;
+}
+
+#loader {
+	margin-bottom: 25px;
+}
+
+div.spinner-border {
+	width: 4rem;
+	height: 4rem;
+}
+
+#left-margin {
+	background-color: #1b2838;
+	width: 20%;
+	height: 100vh;
+}
+
+#right-margin {
+	background-color: #1b2838;
+	width: 20%;
+	height: 100vh;
+}
+
+#content {
+	border-radius: 10px;
+	width: 60%;
+}
+
+.container {
+	width: auto;
+}
+
+#description-container {
+	min-height: 500px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+#ghlink {
+	color: #8ec2f1;
+}
+
+h1 {
+	font-size: 28px;
+}
+
+h2 {
+	font-size: 24px;
+}
+
+h3 {
+	font-size: 20px;
+}
+
+body {
+	/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#263d56+0,264d6b+38,26516f+75,004084+100,207cca+100,7db9e8+100 */
+	background: #263d56; /* Old browsers */
+	background: -moz-linear-gradient(45deg,  #282e33 0%, #264d6b 38%, #26516f 75%, #004084 100%, #207cca 100%, #7db9e8 100%); /* FF3.6-15 */
+	background: -webkit-linear-gradient(45deg,  #282e33 0%,#264d6b 38%,#26516f 75%,#004084 100%,#207cca 100%,#7db9e8 100%); /* Chrome10-25,Safari5.1-6 */
+	background: linear-gradient(45deg,  #282e33 0%,#264d6b 38%,#26516f 75%,#004084 100%,#207cca 100%,#7db9e8 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#263d56', endColorstr='#7db9e8',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+.game-tag {
+	background-color: #274d71;
+	margin-left: 20px;
+	color: #67c1f5;
+	border-radius: 3px;
+	line-height: 18px;
+	font-size: 14px;
+	padding: 3px;
+}
+
+#developer {
+	margin-bottom: 10px;
+	color: #040406;
+}
+
+#generate_button {
+	color: #acd4ff;
+	background-color: #233b58;
+	border-color: #233b58;
+	margin-top: 20px;
+}
+
+#description_divider {
+	height: 1px;
+    background: #5c5c5c;
+    border: none;
+    margin-bottom: 5px;
+}
+

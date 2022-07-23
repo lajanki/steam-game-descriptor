@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+	<head>
+		<title>Game Ideas</title>
+		<meta charset="UTF-8" />
+		<meta name="descriptions" content="Game description written by a text generator">
+		<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+		<!-- bootstrap -->
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- jQuery, Popper and Bootstrap -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+		<script type=text/javascript>
+			$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+		</script>
+
+		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
+		<script type=text/javascript>
+
+			// Generate an initial description on load and set a handler to the generate button
+			$(function() {
+				$(document).ready(setDescription);
+			  	$("#generate_button").bind("click", setDescription);
+			});
+			
+	
+			/* Send a request to the backend for a new description and display it the
+			description container.
+			*/ 
+			function setDescription() {
+				$.ajax({
+					beforeSend: function(request) {
+						request.setRequestHeader("X-Button-Callback", "true");
+						// Hide description content and display the loader
+						$("#description").text("");
+						$("#developer").text("");
+						$("#tags").text("");
+						$("#loader").show();
+					},
+					dataType: "json",
+					url: $SCRIPT_ROOT + "/_generate",
+					success: function(data) {
+						// Set description content and hide loader
+						$("#loader").hide();
+						$("#description").html(data.description);
+
+						var developer = "Developer: " + data.developer
+						$("#developer").text(developer);
+
+						// create <span> html string for every tag in the response and set as
+						// the #tags element
+						var html = "";
+						for (let i = 0; i < data.tags.length; i++) {
+							var tag_html = "<span class='game-tag'>" + data.tags[i] + "</span>";
+							html += tag_html;
+						}	
+						$("#tags").html(html);
+
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						$("#description").html("<h1>Something went wrong, try again</h1>");
+						$("#developer").text("");
+						$("#tags").text("");
+						$("#loader").hide();
+					}
+				});
+				return false;
+			}
+		</script>
+
+	</head>
+	<body>
+
+	<div class="container">
+
+		<div class="row">
+			<!-- left margin -->
+			<div class="hidden-xs col-md-2" id="left-margin"></div>
+
+			<!-- Middle section for content -->
+			<div id="content" class="col-xs-12 col-md-8">
+				<div class="page-header">
+				 	<h1>Steam Game Descriptions</h1> 
+				 	<p>Game descriptions modelled after Steam store as written by a random text generator</p>
+				</div>
+
+				<!-- Container for the description and a loader div -->
+				<div class="card">
+					<div class="card-body">
+						<div id="description"></div>
+						<div id="developer"></div>
+						<div id="tags"></div>
+
+						<!-- A spinning loader to be displayed while new description is being loaded -->
+						<div class="text-center" id="loader">
+							<div class="spinner-border text-primary" role="status">
+								<span class="sr-only">Loading...</span>
+							</div>
+						</div>
+
+						<hr id="description_divider"/>
+						<div class="row justify-content-center">
+							<button type="submit" class="btn btn-primary" id="generate_button">Generate</button>
+						</div>
+					</div>
+				</div>
+
+
+				<hr />
+				<img src="static/img/GitHub-Mark-32px.png" height="24" width="24"><a id="ghlink" href="https://github.com/lajanki/markov_text_generator"> Markov Text Generator</a>
+			</div>
+
+			<!-- right margin -->
+			<div class="hidden-xs col-md-2" id="right-margin"></div>
+
+		</div>
+	</div>
+
+
+    </body>
+</html>
