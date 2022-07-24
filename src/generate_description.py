@@ -34,7 +34,7 @@ class DescriptionGenerator():
 
 		# main description
 		for _ in range(random.randint(1,3)):
-			size = int(abs(random.gauss(20, 10/4.0)))
+			size = int(abs(random.gauss(15, 3.0)))
 
 			paragraph = self.markov_generator.generate(seed=seed, size=size, complete_sentence=True)
 			html = f"<p>{paragraph}</p>"
