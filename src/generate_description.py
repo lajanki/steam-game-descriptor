@@ -3,9 +3,10 @@
 import os.path
 import random
 import re
+import json
 from collections import defaultdict
 
-import json
+import markdown
 
 from src.generator import generator
 
@@ -23,13 +24,12 @@ class DescriptionGenerator():
 
 	def __call__(self):
 		"""Generate a description with 1-3 paragraphs and 2-5 features."""
-
 		# Choose a random seed from seeds.txt
 		with open(SEED_FILE) as f:
 			seeds = [line.strip() for line in f]
 			seed = random.choice(seeds)
 
-		title = f"<h2>{generate_game_title()}</h2>"
+		title = f"## {generate_game_title()}"
 		paragraphs = [title]
 
 		# main description
@@ -37,30 +37,27 @@ class DescriptionGenerator():
 			size = int(abs(random.gauss(15, 3.0)))
 
 			paragraph = self.markov_generator.generate(seed=seed, size=size, complete_sentence=True)
-			html = f"<p>{paragraph}</p>"
-			paragraphs.append(html)
+			paragraphs.append(paragraph)
 			seed = None
 
-		description = "".join(paragraphs)
+		description = "\n".join(paragraphs)
 
 
 		# list of features
-		features = ["<h3>Features</h3>"]
-		features.append("<ul>")
+		features = ["### Features"]
 
 		for _ in range(random.randint(2,5)):
 			size = random.gauss(12, 4)
 			size = min(size, 22) # features should be short
 
-			feature = self.markov_generator.generate(size=size, complete_sentence=True)
-			html = f"<li>{feature}</li>"
-			features.append(html)
+			feature = f" * {self.markov_generator.generate(size=size, complete_sentence=True)}"
+			features.append(feature)
 
-		features.append("</ul>")
-		features = "".join(features)
+		features = "\n".join(features)
+		html = markdown.markdown(description + "\n\n" + features)
 
 		return {
-			"description": description + features,
+			"description": html,
 			"tags":	generate_tags(),
 			"developer": generate_developer()
 		}

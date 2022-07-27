@@ -30,8 +30,6 @@ class Generator:
 		# If a seed was provided, use the last n-1 (ie. key length) words as the key...
 		if seed:
 			seed_tokens = seed.split()
-
-			# determine key length from the model
 			key_length = len(model_keys[0])
 			key = tuple(seed_tokens[-key_length:])
 			
@@ -51,7 +49,6 @@ class Generator:
 		# To complete a sentence, keep adding words until a we encounter one ending in punctuation or
 		# until the next word is a conjunction.
 		if complete_sentence:
-
 			while True:
 				word, key = self.next_word(key)
 				words.append(word)
@@ -104,26 +101,28 @@ class Generator:
 		tokens[0] = tokens[0].capitalize().strip()
 		text = " ".join(tokens)
 
-		# replacements = [
-		# 	(" ?", "?"),
-		# 	(" !", "!"),
-		# 	(" ,", ","),
-		# 	(" .", "."),
-		# 	(" (", ","),
-		# 	(" (", ","),
-		# 	("(", ""),
-		# 	(")", ""),
-		# 	("\"", ""),
-		# 	("“", ""),
-		# 	("”", ""),
-		# 	("”", ""),
-		# 	("•", ""),
-		# 	("●", ""),
-		# 	("—", ""),
-		# 	("…", "...")
-		# ]
-		# for item in replacements:
-		# 	text = text.replace(item[0], item[1])
+		replacements = [
+			#(" ?", "?"),
+			#(" !", "!"),
+			#(" ,", ","),
+			#(" .", "."),
+			#(" (", ","),
+			#(" (", ","),
+			(",.", "."),
+			(" .", "."),
+			("(", ""),
+			(")", ""),
+			("\"", ""),
+			("“", ""),
+			("”", ""),
+			("•", ""),
+			("●", ""),
+			("*", ""),
+			("®", ""),
+			("—", "")
+		]
+		for item in replacements:
+			text = text.replace(item[0], item[1])
 
 		text = text.strip(",;:-* ")
 		return text
