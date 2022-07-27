@@ -9,6 +9,9 @@ class Generator:
 	def __init__(self):
 		self.model = self.load_model()
 
+		# Set initial model key to a random key of the model
+		self.key = random.choice(list(self.model))
+
 	def load_model(self):
 		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, "model.pkl")
 		return pickle.loads(model_data)
@@ -27,37 +30,34 @@ class Generator:
 		words = []
 		model_keys = list(self.model.keys())
 
-		# If a seed was provided, use the last n-1 (ie. key length) words as the key...
+		# If a seed was provided and it is found in the model, initialize text with it and
+		# use the last n-1 (ie. key length) words as the key.
 		if seed:
 			seed_tokens = seed.split()
 			key_length = len(model_keys[0])
 			key = tuple(seed_tokens[-key_length:])
 			
 			if key in self.model:
-				# Set seed as initial words
+				self.key = key
 				words.extend(seed_tokens)
 
-		# ...otherwise (or if the seed was invalid) select random key from the model
-		if not words:
-			key = random.choice(model_keys)
-
-		# Generate words until length is satisfied
+		# Keep generating words until length condition is satisfied
 		while len(words) < size:
-			word, key = self.next_word(key)
+			word = self.get_word()
 			words.append(word)
 
 		# To complete a sentence, keep adding words until a we encounter one ending in punctuation or
 		# until the next word is a conjunction.
 		if complete_sentence:
 			while True:
-				word, key = self.next_word(key)
+				word = self.get_word()
 				words.append(word)
 
 				# break on punctuation
 				if word.endswith((".", "!", "?", "...", "…")):
 					break
 
-				# for conjunctions, add punctuation to the previous word and exclude current word
+				# for conjunctions, break the sentence by adding punctuation to the previous word and excluding the current word
 				if word.lower() in ("and", "for", "but"):
 					words.pop()
 					words[-1] = words[-1] + "."
@@ -66,27 +66,18 @@ class Generator:
 		# Return a properly capitalized string.
 		return self.cleanup(words)
 
-	def next_word(self, key):
+	def get_word(self):
 		"""Given a key to the model data, choose a random word successor matching that key
 		and generate the next key by joining the new words with the tail end of the input key.
-		Args:
-			key (tuple): a key in the model for a word to fetch
 		Return
 			(word, key) tuple containing the fetched word and the next key
 		"""
-		try:
-			next_word = random.choice(list(self.model[key]))
+		next_word = random.choice(list(self.model[self.key]))
 
-			# Create a new key tuple by flattening the rightmost items and add the new word
-			new_key = (*key[1:], next_word)
+		# Update current key: shift to the right once and the new word
+		self.key = (*self.key[1:], next_word)
 
-		# If key is not a valid key in the model, randomly choose a new key and matching successor
-		except KeyError:
-			model_keys = list(self.model.keys())
-			new_key = random.choice(model_keys)
-			next_word = random.choice(list(model_keys[new_key]))
-
-		return next_word, new_key
+		return next_word
 
 	def cleanup(self, tokens):
 		"""cleanup a sentence by capitalizing the first letter, remove certain characters such as
