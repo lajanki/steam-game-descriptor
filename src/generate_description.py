@@ -23,7 +23,10 @@ class DescriptionGenerator():
 		self.markov_generator = generator.Generator()
 
 	def __call__(self):
-		"""Generate a description with 1-3 paragraphs and 2-5 features."""
+		"""Generate a description with random number of paragraphs and content types."""
+		# Randomize a new content config for each run
+		self.config = create_config()
+
 		# Choose a random seed from seeds.txt
 		with open(SEED_FILE) as f:
 			seeds = [line.strip() for line in f]
@@ -33,27 +36,37 @@ class DescriptionGenerator():
 		paragraphs = [title]
 
 		# main description
-		for _ in range(random.randint(1,3)):
+		for _ in range(self.config["paragraphs"]):
 			size = int(abs(random.gauss(15, 3.0)))
-
 			paragraph = self.markov_generator.generate(seed=seed, size=size, complete_sentence=True)
 			paragraphs.append(paragraph)
 			seed = None
 
+		# sub sections with headers
+		for _ in range(self.config["subsections"]):
+			header = self.markov_generator.generate(seed=seed, size=3)
+			paragraphs.append(f"#### {header}")
+
+			self.markov_generator.ff_to_next_sentence()
+			size = int(abs(random.gauss(15, 3.0)))
+			paragraph = self.markov_generator.generate(size=size, complete_sentence=True)
+			paragraphs.append(paragraph)
+
 		description = "\n".join(paragraphs)
 
-
 		# list of features
-		features = ["### Features"]
-
-		for _ in range(random.randint(2,5)):
-			size = random.gauss(12, 4)
-			size = min(size, 22) # features should be short
-
+		feature_list = []
+		for _ in range(self.config["features"]):
+			size = min(random.gauss(12, 4), 22) # features should be short
 			feature = f" * {self.markov_generator.generate(size=size, complete_sentence=True)}"
-			features.append(feature)
+			feature_list.append(feature)
 
-		features = "\n".join(features)
+		if feature_list:
+			feature_list.insert(0, "#### Features")
+			features = "\n".join(feature_list)
+		else:
+			features = ""
+
 		html = markdown.markdown(description + "\n\n" + features)
 
 		return {
@@ -62,6 +75,22 @@ class DescriptionGenerator():
 			"developer": generate_developer()
 		}
 
+
+def create_config():
+	"""Create a randomized config for number of paragraphs and
+	types of content to display.
+	Content can either be either:
+		* main paragraph(s) and a number of subsections with headers, or
+		* main paragraph(s) and a list of features
+	"""
+	# randomly create either features or subsections
+	num_of_features = random.randint(2,5) if random.randint(0,1) else 0
+	num_of_subsections = random.randint(1,2) if num_of_features == 0 else 0
+	return {
+		"paragraphs": random.randint(1,2),
+		"features": num_of_features,
+		"subsections": num_of_subsections
+	}
 
 def generate_game_title():
 	"""Generate a random title based on a local nltk POS tags map file.
