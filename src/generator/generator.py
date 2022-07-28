@@ -67,10 +67,10 @@ class Generator:
 		return self.cleanup(words)
 
 	def get_word(self):
-		"""Given a key to the model data, choose a random word successor matching that key
-		and generate the next key by joining the new words with the tail end of the input key.
+		"""Choose a random successor word from the model matching current key and 
+		update the key by joining the new word with the tail end of the old key.
 		Return
-			(word, key) tuple containing the fetched word and the next key
+			a randomly chosen word
 		"""
 		next_word = random.choice(list(self.model[self.key]))
 
@@ -78,6 +78,14 @@ class Generator:
 		self.key = (*self.key[1:], next_word)
 
 		return next_word
+
+	def ff_to_next_sentence(self):
+		"""Fast forward the model to a 'natural' sentence break. Fetch a new word 
+		ignoring the output until the key ends with punctuation.
+		Thus, the next word generated corresponds to a sentence break in the training data.
+		"""
+		while not self.key[-1].endswith((".", "!", "?", "...", "…")):
+			self.get_word()
 
 	def cleanup(self, tokens):
 		"""cleanup a sentence by capitalizing the first letter, remove certain characters such as
