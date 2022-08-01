@@ -40,10 +40,10 @@ def test_next_word_selection(input_key, expected_word, expected_output_key):
         }
         g = generator.Generator()
         # Fix the initial key so output can be determined
-        g.key = input_key
+        g._key = input_key
 
     assert g.get_word() == expected_word
-    assert g.key == expected_output_key
+    assert g._key == expected_output_key
 
 
 @patch("src.generator.generator.Generator.get_word")

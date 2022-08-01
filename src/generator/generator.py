@@ -10,7 +10,7 @@ class Generator:
 		self.model = self.load_model()
 
 		# Set initial model key to a random key of the model
-		self.key = random.choice(list(self.model))
+		self._key = random.choice(list(self.model))
 
 	def load_model(self):
 		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, "model.pkl")
@@ -38,7 +38,7 @@ class Generator:
 			key = tuple(seed_tokens[-key_length:])
 			
 			if key in self.model:
-				self.key = key
+				self._key = key
 				words.extend(seed_tokens)
 
 		# Keep generating words until length condition is satisfied
@@ -72,10 +72,10 @@ class Generator:
 		Return
 			a randomly chosen word
 		"""
-		next_word = random.choice(list(self.model[self.key]))
+		next_word = random.choice(list(self.model[self._key]))
 
 		# Update current key: shift to the right once and the new word
-		self.key = (*self.key[1:], next_word)
+		self._key = (*self._key[1:], next_word)
 
 		return next_word
 
@@ -84,7 +84,7 @@ class Generator:
 		ignoring the output until the key ends with punctuation.
 		Thus, the next word generated corresponds to a sentence break in the training data.
 		"""
-		while not self.key[-1].endswith((".", "!", "?", "...", "…")):
+		while not self._key[-1].endswith((".", "!", "?", "...", "…")):
 			self.get_word()
 
 	def cleanup(self, tokens):
@@ -99,29 +99,23 @@ class Generator:
 		# decapitalize everyting else).
 		tokens[0] = tokens[0].capitalize().strip()
 		text = " ".join(tokens)
-
-		replacements = [
-			#(" ?", "?"),
-			#(" !", "!"),
-			#(" ,", ","),
-			#(" .", "."),
-			#(" (", ","),
-			#(" (", ","),
-			(",.", "."),
-			(" .", "."),
-			("(", ""),
-			(")", ""),
-			("\"", ""),
-			("“", ""),
-			("”", ""),
-			("•", ""),
-			("●", ""),
-			("*", ""),
-			("®", ""),
-			("—", "")
-		]
-		for item in replacements:
-			text = text.replace(item[0], item[1])
+		replacements = {
+			",.": ".",
+			" .": ".",
+			"(": "",
+			")": "",
+			"\"": "",
+			"“": "",
+			"”": "",
+			"•": "",
+			"●": "",
+			"★": "",
+			"*": "",
+			"®": "",
+			"—": ""
+		}
+		for old, new in replacements.items():
+			text = text.replace(old, new)
 
 		text = text.strip(",;:-* ")
 		return text
