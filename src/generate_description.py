@@ -14,7 +14,7 @@ from src.generator import generator
 POS_TAG_FILE = os.path.join("data", "pos_tags.json")
 DEVELOPER_FILE = os.path.join("data", "developers.txt")
 TAG_FILE = os.path.join("data", "tags.txt")
-SEED_FILE = os.path.join("data", "seeds.txt")
+SEED_FILE = os.path.join("data", "seeds.json")
 
 
 class DescriptionGenerator():
@@ -29,8 +29,7 @@ class DescriptionGenerator():
 
 		# Choose a random seed from seeds.txt
 		with open(SEED_FILE) as f:
-			seeds = [line.strip() for line in f]
-			seed = random.choice(seeds)
+			seeds = json.load(f)
 
 		title = f"## {generate_game_title()}"
 		paragraphs = [title]
@@ -38,13 +37,15 @@ class DescriptionGenerator():
 		# main description
 		for _ in range(self.config["paragraphs"]):
 			size = int(abs(random.gauss(15, 3.0)))
+			seed = random.choice(seeds["text"])
 			paragraph = self.markov_generator.generate(seed=seed, size=size, complete_sentence=True)
 			paragraphs.append(paragraph)
 			seed = None
 
 		# sub sections with headers
 		for _ in range(self.config["subsections"]):
-			header = self.markov_generator.generate(seed=seed, size=3)
+			seed = random.choice(seeds["headers"])
+			header = self.markov_generator.generate(seed=seed, size=3).title()
 			paragraphs.append(f"#### {header}")
 
 			self.markov_generator.ff_to_next_sentence()
