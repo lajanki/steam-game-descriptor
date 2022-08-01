@@ -16,14 +16,15 @@ class Generator:
 		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, "model.pkl")
 		return pickle.loads(model_data)
 
-	def generate(self, seed=None, size=25, complete_sentence=False):
+	def generate(self, seed=None, size=25, complete_sentence=False, continue_until_valid=False):
 		"""Generates a string of size words by randomly selecting words from the successor dictionary using the
 		previous n-1 words as the key.
 		Arg:
 			seed (str): initial text to start generting from. If None, a random key is chosen from the model data
-			size (int): number of words the text should contain.
-			complete_sentence (boolean): whether to continue adding words past size until a punctuation
-				character or a capitalized word is encoutered.
+			size (int): minimum number of words the text should contain.
+			complete_sentence (boolean): continue adding words past minimum size until a punctuation
+				character or a whitelisted conjunction is encountered.
+			continue_until_valid (boolean): continue adding words until a non-blacklisted word is encountered.
 		Return:
 			the generated text
 		"""
@@ -63,7 +64,12 @@ class Generator:
 					words[-1] = words[-1] + "."
 					break
 
-		# Return a properly capitalized string.
+		if continue_until_valid:
+			word = words[-1]
+			while word.lower() in ("as", "a", "is", "of", "the", "and", "under", "over", "your"):
+				word = self.get_word()
+				words.append(word)
+
 		return self.cleanup(words)
 
 	def get_word(self):
@@ -109,6 +115,8 @@ class Generator:
 			"”": "",
 			"•": "",
 			"●": "",
+			"▼": "",
+			"■": "",
 			"★": "",
 			"*": "",
 			"®": "",

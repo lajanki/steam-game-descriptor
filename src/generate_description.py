@@ -4,6 +4,7 @@ import os.path
 import random
 import re
 import json
+import string
 from collections import defaultdict
 
 import markdown
@@ -45,7 +46,8 @@ class DescriptionGenerator():
 		# sub sections with headers
 		for _ in range(self.config["subsections"]):
 			seed = random.choice(seeds["headers"])
-			header = self.markov_generator.generate(seed=seed, size=3).title()
+			header = self.markov_generator.generate(seed=seed, size=3, continue_until_valid=True)
+			header = string.capwords(header.rstrip(".")) # use string.capwords to avoid issues with apostrophes
 			paragraphs.append(f"#### {header}")
 
 			self.markov_generator.ff_to_next_sentence()
