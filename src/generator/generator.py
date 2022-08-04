@@ -7,13 +7,14 @@ from src import utils
 class Generator:
 
 	def __init__(self, filename):
-		self.model = self._load_model(filename)
+		self.filename = filename
+		self.model = self._load_model()
 
 		# Set initial model key to a random key of the model
 		self._key = random.choice(list(self.model))
 
-	def _load_model(self, filename):
-		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, filename)
+	def _load_model(self):
+		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, self.filename)
 		return pickle.loads(model_data)
 
 	def generate(self, seed=None, size=25, complete_sentence=False, continue_until_valid=False):
