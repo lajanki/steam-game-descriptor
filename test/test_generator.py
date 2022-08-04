@@ -18,7 +18,7 @@ def test_next_word_selection(input_key, expected_word, expected_output_key):
     is the expected word selected and key updated?
     Note: uses single element successor lists to force-select predetermined words
     """
-    with patch("src.generator.generator.Generator.load_model") as mock_load_model:
+    with patch("src.generator.generator.Generator._load_model") as mock_load_model:
         mock_load_model.return_value = {
             ('If', 'you'): ['can'],
             ('you', 'can'): ['look'],
@@ -38,7 +38,7 @@ def test_next_word_selection(input_key, expected_word, expected_output_key):
             ('and', 'which'): ['will'],
             ('which', 'will'): ['not.']
         }
-        g = generator.Generator()
+        g = generator.Generator("dummy_filename")
         # Fix the initial key so output can be determined
         g._key = input_key
 
@@ -49,12 +49,12 @@ def test_next_word_selection(input_key, expected_word, expected_output_key):
 @patch("src.generator.generator.Generator.get_word")
 def test_valid_seed(mock_get_word):
     """Test generation with valid seed."""
-    with patch("src.generator.generator.Generator.load_model") as mock_load_model:
+    with patch("src.generator.generator.Generator._load_model") as mock_load_model:
         mock_load_model.return_value = {
             ('If', 'you'): ['can'],
             ('you', 'can'): ['look']
         }
-        g = generator.Generator()
+        g = generator.Generator("dummy_filename")
 
     # Mock get_word to return determined words
     mock_get_word.side_effect = ["one", "two", "three"]
@@ -68,12 +68,12 @@ def test_invalid_seed(mock_get_word):
     Something should be generated even when seed is not an element of the model.
     (this is mainly to test no execptions are raised)
     """
-    with patch("src.generator.generator.Generator.load_model") as mock_load_model:
+    with patch("src.generator.generator.Generator._load_model") as mock_load_model:
         mock_load_model.return_value = {
             ('If', 'you'): ['can'],
             ('you', 'can'): ['look']
         }
-        g = generator.Generator()
+        g = generator.Generator("dummy_filename")
 
     mock_get_word.side_effect = ["foo"] * 7
 
@@ -83,11 +83,11 @@ def test_invalid_seed(mock_get_word):
 @patch("src.generator.generator.Generator.get_word")
 def test_sentence_completion(mock_get_word):
     """Are sentences continued until a natural break?"""
-    with patch("src.generator.generator.Generator.load_model") as mock_load_model:
+    with patch("src.generator.generator.Generator._load_model") as mock_load_model:
         mock_load_model.return_value = {
             ('If', 'you'): ['can']
         }
-        g = generator.Generator()
+        g = generator.Generator("dummy_filename")
 
 
     # terminate to punctuation: stop at last word added

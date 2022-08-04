@@ -3,11 +3,10 @@ from unittest.mock import patch
 from src.generator import trainer
 
 
-@patch("src.utils.download_descriptions")
-def test_model_train(mock_download_descriptions):
+def test_model_train():
     """Test model train output on given input data."""
-    mock_download_descriptions.return_value = "I am not a Russian spy, cross my heart and hope to die"
-    t = trainer.Trainer()
+    train_text_data = "I am not a Russian spy, cross my heart and hope to die"
+    t = trainer.Trainer(train_text_data, "dummy_filename")
     t.train()
 
     expected = {
@@ -25,11 +24,10 @@ def test_model_train(mock_download_descriptions):
     }
     assert t.model_data == expected
 
-@patch("src.utils.download_descriptions")
-def test_model_on_duplicate_successors(mock_download_descriptions):
+def test_model_on_duplicate_successors():
     """Test model train with duplicate ngrams."""
-    mock_download_descriptions.return_value = "almost too hot, almost too cold. almost too hot,"
-    t = trainer.Trainer()
+    train_text_data = "almost too hot, almost too cold. almost too hot,"
+    t = trainer.Trainer(train_text_data, "dummy_filename")
     t.train()
 
     expected = {
