@@ -20,6 +20,7 @@
 import random
 import requests
 import logging
+import string
 
 from bs4 import BeautifulSoup
 from src import utils
@@ -83,7 +84,17 @@ def get_app_id_list():
 		and app["appid"] >= 10) 
 	]
 
-	return app_ids	
+	return app_ids
+
+def get_app_names():
+	"""Fetch a list of app names as string."""
+	r = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2")
+	app_list = r.json()["applist"]["apps"]
+	# Assert at least one ASCII chracter in the name
+	names = [ app["name"] for app in app_list if any(c in app["name"] for c in string.ascii_uppercase) ]
+
+	# Return a string suitable for trainer
+	return " ".join(names)
 
 def html_description_to_text(description):
 	soup = BeautifulSoup(description, "html.parser")

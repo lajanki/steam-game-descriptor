@@ -21,7 +21,8 @@ SEED_FILE = os.path.join("data", "seeds.json")
 class DescriptionGenerator():
 
 	def __init__(self):
-		self.markov_generator = generator.Generator()
+		self.markov_generator = generator.Generator("model.pkl")
+		self.title_generator = generator.Generator("model_titles.pkl")
 
 	def __call__(self):
 		"""Generate a description with random number of paragraphs and content types."""
@@ -32,8 +33,14 @@ class DescriptionGenerator():
 		with open(SEED_FILE) as f:
 			seeds = json.load(f)
 
-		title = f"## {generate_game_title()}"
-		paragraphs = [title]
+		paragraphs = []
+
+		# title 
+		size = random.randint(1,4)
+		title = self.title_generator.generate(size=size, continue_until_valid=True)
+		title = string.capwords(title.rstrip(".")) # use string.capwords to avoid issues with apostrophes
+		title = title.replace(".", ":")
+		paragraphs.append(f"## {title}")
 
 		# main description
 		for _ in range(self.config["paragraphs"]):
@@ -47,7 +54,7 @@ class DescriptionGenerator():
 		for _ in range(self.config["subsections"]):
 			seed = random.choice(seeds["headers"])
 			header = self.markov_generator.generate(seed=seed, size=3, continue_until_valid=True)
-			header = string.capwords(header.rstrip(".")) # use string.capwords to avoid issues with apostrophes
+			header = string.capwords(header.rstrip("."))
 			paragraphs.append(f"#### {header}")
 
 			self.markov_generator.ff_to_next_sentence()
@@ -95,45 +102,47 @@ def create_config():
 		"subsections": num_of_subsections
 	}
 
-def generate_game_title():
-	"""Generate a random title based on a local nltk POS tags map file.
-	A valid title:
-	  * does not start with a particle
-	  * does not end with pronoun, determiner or a conjunction
-	"""
-	title_length = random.randint(1, 3)
-	VALID_BASE_TAGS = ('NOUN', 'VERB', 'ADJ', 'DET', 'ADP', 'NUM', 'PRT', 'CONJ', 'PRON', 'ADV')
+# def generate_game_title():
+# 	"""Generate a random title based on a local nltk POS tags map file.
+# 	A valid title:
+# 	  * does not start with a particle
+# 	  * does not end with pronoun, determiner or a conjunction
+# 	DEPRECATED: replaces with separate Markov model based generator. nltk POS tags often
+# 		provide word clouds without meaning.
+# 	"""
+# 	title_length = random.randint(1, 3)
+# 	VALID_BASE_TAGS = ('NOUN', 'VERB', 'ADJ', 'DET', 'ADP', 'NUM', 'PRT', 'CONJ', 'PRON', 'ADV')
 
-	if title_length == 1:
-		title_tags = [random.choice([tag for tag in VALID_BASE_TAGS if tag not in ("PRON", "DET", "CONJ")])]
+# 	if title_length == 1:
+# 		title_tags = [random.choice([tag for tag in VALID_BASE_TAGS if tag not in ("PRON", "DET", "CONJ")])]
 
-	elif title_length == 2:
-		title_tags = [random.choice(tag) for tag in 
-			[
-				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT")],
-				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT", "DET", "CONJ")]
-			]
-		]
+# 	elif title_length == 2:
+# 		title_tags = [random.choice(tag) for tag in 
+# 			[
+# 				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT")],
+# 				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT", "DET", "CONJ")]
+# 			]
+# 		]
 
-	elif title_length == 3:
-		title_tags = [random.choice(tag) for tag in 
-			[
-				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT")],
-				VALID_BASE_TAGS,
-				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT", "DET", "CONJ")]
-			]
-		]
+# 	elif title_length == 3:
+# 		title_tags = [random.choice(tag) for tag in 
+# 			[
+# 				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT")],
+# 				VALID_BASE_TAGS,
+# 				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT", "DET", "CONJ")]
+# 			]
+# 		]
 
-	# Fetch matching words from file.
-	title = []
-	with open(POS_TAG_FILE) as f:
-		pos_map = json.load(f)
+# 	# Fetch matching words from file.
+# 	title = []
+# 	with open(POS_TAG_FILE) as f:
+# 		pos_map = json.load(f)
 
-	for tag in title_tags:
-		title.append(random.choice(pos_map[tag]))
+# 	for tag in title_tags:
+# 		title.append(random.choice(pos_map[tag]))
 
-	title = " ".join(title) 
-	return title.title()
+# 	title = " ".join(title) 
+# 	return title.title()
 
 def generate_tags():
 	"""Choose 2-5 random game tags from file."""

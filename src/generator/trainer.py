@@ -12,9 +12,10 @@ from src import utils
 
 class Trainer():
 
-	def __init__(self, n=3):
+	def __init__(self, train_text_data, filename, n=3):
 		self.n = n
-		self.train_text_data = utils.download_descriptions()
+		self.train_text_data = train_text_data
+		self.filename = filename
 		self.model_data = None
 
 	def run(self):
@@ -23,7 +24,7 @@ class Trainer():
 		self.compute_statistics()
 
 		model = pickle.dumps(self.model_data)
-		utils.upload_to_gcs(model, utils.MODEL_BUCKET, "model.pkl")
+		utils.upload_to_gcs(model, utils.MODEL_BUCKET, self.filename)
 
 	def train(self):
 		"""Train the model given input text. Splits the text into ngrams and store as a dict of (n-1)-gram keys
