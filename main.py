@@ -2,7 +2,7 @@ import argparse
 import logging
 from flask import Flask, render_template, jsonify, request, abort
 
-from src import generate_description, parser
+from src import generate_description, parser, utils
 from src.generator import trainer
 
 
@@ -35,8 +35,14 @@ def train_model():
     # (The X- headers are stripped by App Engine when they originate from external sources)
     # https://cloud.google.com/appengine/docs/standard/python3/scheduling-jobs-with-cron-yaml#validating_cron_requests
     if "X-Appengine-Cron" in request.headers:
-        t = trainer.Trainer()
+        description_text = utils.download_descriptions()
+        t = trainer.Trainer(description_text, "model.pkl")
         t.run()
+
+        names_text = parser.get_app_names()
+        t = trainer.Trainer(names_text, "model_titles.pkl", 2)
+        t.run()
+
         return "OK", 200
 
     abort(500, "Bad request")

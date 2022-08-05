@@ -6,14 +6,15 @@ from src import utils
 
 class Generator:
 
-	def __init__(self):
-		self.model = self.load_model()
+	def __init__(self, filename):
+		self.filename = filename
+		self.model = self._load_model()
 
 		# Set initial model key to a random key of the model
 		self._key = random.choice(list(self.model))
 
-	def load_model(self):
-		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, "model.pkl")
+	def _load_model(self):
+		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, self.filename)
 		return pickle.loads(model_data)
 
 	def generate(self, seed=None, size=25, complete_sentence=False, continue_until_valid=False):
@@ -66,7 +67,7 @@ class Generator:
 
 		if continue_until_valid:
 			word = words[-1]
-			while word.lower() in ("as", "a", "is", "of", "the", "and", "under", "over", "your"):
+			while word.lower() in ("as", "a", "is", "of", "or", "the", "and", "under", "over", "your"):
 				word = self.get_word()
 				words.append(word)
 
@@ -117,6 +118,7 @@ class Generator:
 			"●": "",
 			"▼": "",
 			"■": "",
+			"⭐": "",
 			"★": "",
 			"*": "",
 			"®": "",
