@@ -27,3 +27,10 @@ def test_developer_generation_undetermined(mock_random_choice, mock_random_randi
 
     res = generate_description.generate_developer()
     assert res == "A B Gaming"
+
+def test_number_of_paragraphs_in_config():
+    """Test exclusivity of features and subsections in the config."""
+    c = generate_description.create_config()
+
+    assert c["subsections"] * c["features"] == 0
+    assert max(c["subsections"], c["features"]) > 0

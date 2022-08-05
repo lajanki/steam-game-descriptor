@@ -87,6 +87,11 @@ h3 {
 	font-size: 20px;
 }
 
+h4 {
+	font-size: 18px;
+	font-weight: bold;
+}
+
 body {
 	/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#263d56+0,264d6b+38,26516f+75,004084+100,207cca+100,7db9e8+100 */
 	background: #263d56; /* Old browsers */

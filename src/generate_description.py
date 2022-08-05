@@ -3,9 +3,11 @@
 import os.path
 import random
 import re
+import json
+import string
 from collections import defaultdict
 
-import json
+import markdown
 
 from src.generator import generator
 
@@ -13,7 +15,7 @@ from src.generator import generator
 POS_TAG_FILE = os.path.join("data", "pos_tags.json")
 DEVELOPER_FILE = os.path.join("data", "developers.txt")
 TAG_FILE = os.path.join("data", "tags.txt")
-SEED_FILE = os.path.join("data", "seeds.txt")
+SEED_FILE = os.path.join("data", "seeds.json")
 
 
 class DescriptionGenerator():
@@ -22,49 +24,76 @@ class DescriptionGenerator():
 		self.markov_generator = generator.Generator()
 
 	def __call__(self):
-		"""Generate a description with 1-3 paragraphs and 2-5 features."""
+		"""Generate a description with random number of paragraphs and content types."""
+		# Randomize a new content config for each run
+		self.config = create_config()
 
 		# Choose a random seed from seeds.txt
 		with open(SEED_FILE) as f:
-			seeds = [line.strip() for line in f]
-			seed = random.choice(seeds)
+			seeds = json.load(f)
 
-		title = f"<h2>{generate_game_title()}</h2>"
+		title = f"## {generate_game_title()}"
 		paragraphs = [title]
 
 		# main description
-		for _ in range(random.randint(1,3)):
+		for _ in range(self.config["paragraphs"]):
 			size = int(abs(random.gauss(15, 3.0)))
-
+			seed = random.choice(seeds["text"])
 			paragraph = self.markov_generator.generate(seed=seed, size=size, complete_sentence=True)
-			html = f"<p>{paragraph}</p>"
-			paragraphs.append(html)
+			paragraphs.append(paragraph)
 			seed = None
 
-		description = "".join(paragraphs)
+		# sub sections with headers
+		for _ in range(self.config["subsections"]):
+			seed = random.choice(seeds["headers"])
+			header = self.markov_generator.generate(seed=seed, size=3, continue_until_valid=True)
+			header = string.capwords(header.rstrip(".")) # use string.capwords to avoid issues with apostrophes
+			paragraphs.append(f"#### {header}")
 
+			self.markov_generator.ff_to_next_sentence()
+			size = int(abs(random.gauss(15, 3.0)))
+			paragraph = self.markov_generator.generate(size=size, complete_sentence=True)
+			paragraphs.append(paragraph)
+
+		description = "\n".join(paragraphs)
 
 		# list of features
-		features = ["<h3>Features</h3>"]
-		features.append("<ul>")
+		feature_list = []
+		for _ in range(self.config["features"]):
+			size = min(random.gauss(12, 4), 22) # features should be short
+			feature = f" * {self.markov_generator.generate(size=size, complete_sentence=True)}"
+			feature_list.append(feature)
 
-		for _ in range(random.randint(2,5)):
-			size = random.gauss(12, 4)
-			size = min(size, 22) # features should be short
+		if feature_list:
+			feature_list.insert(0, "#### Features")
+			features = "\n".join(feature_list)
+		else:
+			features = ""
 
-			feature = self.markov_generator.generate(size=size, complete_sentence=True)
-			html = f"<li>{feature}</li>"
-			features.append(html)
-
-		features.append("</ul>")
-		features = "".join(features)
+		html = markdown.markdown(description + "\n\n" + features)
 
 		return {
-			"description": description + features,
+			"description": html,
 			"tags":	generate_tags(),
 			"developer": generate_developer()
 		}
 
+
+def create_config():
+	"""Create a randomized config for number of paragraphs and
+	types of content to display.
+	Content can either be either:
+		* main paragraph(s) and a number of subsections with headers, or
+		* main paragraph(s) and a list of features
+	"""
+	# randomly create either features or subsections
+	num_of_features = random.randint(2,5) if random.randint(0,1) else 0
+	num_of_subsections = random.randint(1,2) if num_of_features == 0 else 0
+	return {
+		"paragraphs": random.randint(1,2),
+		"features": num_of_features,
+		"subsections": num_of_subsections
+	}
 
 def generate_game_title():
 	"""Generate a random title based on a local nltk POS tags map file.

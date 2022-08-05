@@ -7,14 +7,17 @@ from src.generator import generator
 
 
 @pytest.mark.parametrize(
-    "input_key,expected",
+    "input_key,expected_word,expected_output_key",
     [
-        (("If", "you"), ("can", ("you", "can"))),
-        (("which", "grain"), ("will", ("grain", "will")))
+        (("If", "you"), "can", ("you", "can")),
+        (("which", "grain"), "will", ("grain", "will"))
     ]
 )
-def test_next_word_selection(input_key, expected):
-    """Test successor word selection."""
+def test_next_word_selection(input_key, expected_word, expected_output_key):
+    """Test model behaviour on successor word selection:
+    is the expected word selected and key updated?
+    Note: uses single element successor lists to force-select predetermined words
+    """
     with patch("src.generator.generator.Generator.load_model") as mock_load_model:
         mock_load_model.return_value = {
             ('If', 'you'): ['can'],
@@ -36,12 +39,16 @@ def test_next_word_selection(input_key, expected):
             ('which', 'will'): ['not.']
         }
         g = generator.Generator()
+        # Fix the initial key so output can be determined
+        g._key = input_key
 
-    assert g.next_word(input_key) == expected
+    assert g.get_word() == expected_word
+    assert g._key == expected_output_key
 
-@patch("src.generator.generator.Generator.next_word")
-def test_seed(mock_next_word):
-    """Test seed given to generate."""
+
+@patch("src.generator.generator.Generator.get_word")
+def test_valid_seed(mock_get_word):
+    """Test generation with valid seed."""
     with patch("src.generator.generator.Generator.load_model") as mock_load_model:
         mock_load_model.return_value = {
             ('If', 'you'): ['can'],
@@ -49,16 +56,32 @@ def test_seed(mock_next_word):
         }
         g = generator.Generator()
 
-    # Mock next_word to return determined words
-    mock_next_word.side_effect = [("one", None), ("two", None), ("three", None)]
+    # Mock get_word to return determined words
+    mock_get_word.side_effect = ["one", "two", "three"]
 
-    seed = "A B If you" # the last 2 words has to be in the model
-    res = g.generate(seed, size=7)
-
+    res = g.generate(seed="A B If you", size=7)
     assert res == "A B If you one two three"
 
-@patch("src.generator.generator.Generator.next_word")
-def test_sentence_completion(mock_next_word):
+@patch("src.generator.generator.Generator.get_word")
+def test_invalid_seed(mock_get_word):
+    """Test generation with invalid seed:
+    Something should be generated even when seed is not an element of the model.
+    (this is mainly to test no execptions are raised)
+    """
+    with patch("src.generator.generator.Generator.load_model") as mock_load_model:
+        mock_load_model.return_value = {
+            ('If', 'you'): ['can'],
+            ('you', 'can'): ['look']
+        }
+        g = generator.Generator()
+
+    mock_get_word.side_effect = ["foo"] * 7
+
+    res = g.generate(seed="No such element", size=7)
+    assert len(res.split()) == 7
+
+@patch("src.generator.generator.Generator.get_word")
+def test_sentence_completion(mock_get_word):
     """Are sentences continued until a natural break?"""
     with patch("src.generator.generator.Generator.load_model") as mock_load_model:
         mock_load_model.return_value = {
@@ -67,12 +90,12 @@ def test_sentence_completion(mock_next_word):
         g = generator.Generator()
 
 
-    # terminate to punctuation: keep last word added
-    mock_next_word.side_effect = [("a", None), ("b", None), ("C", None), ("D,", None), ("E?", None), ("F", None)]
+    # terminate to punctuation: stop at last word added
+    mock_get_word.side_effect = ["a", "b", "C", "D,", "E?", "F"]
     res = g.generate(complete_sentence=True, size=3)
     assert res == "A b C D, E?"
 
-    # terminate due to conjunction: keep previous words
-    mock_next_word.side_effect = [("a", None), ("b", None), ("C", None), ("D", None), ("E", None), ("and", None)]
+    # terminate due to conjunction: stop at previous word
+    mock_get_word.side_effect = ["a", "b", "C", "D", "E", "and"]
     res = g.generate(complete_sentence=True, size=3)
     assert res == "A b C D E."
