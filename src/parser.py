@@ -26,18 +26,18 @@ from bs4 import BeautifulSoup
 from src import utils
 
 
-REQUEST_WINDOW_LIMIT = 200
 
-
-
-def upload_description_batch():
-	"""Upload a randomly selected batch of Steam game descriptions to the data bucket."""
+def upload_description_batch(batch_size=200):
+	"""Upload a randomly selected batch of Steam game descriptions to the data bucket.
+	Args:
+		batch_size (int): sample size of descriptions to parse.
+	"""
 	app_id_list = _get_app_id_list()
-	sample = random.sample(app_id_list, REQUEST_WINDOW_LIMIT)
+	sample = random.sample(app_id_list, batch_size)
 	URL = "https://store.steampowered.com/api/appdetails"
 	BUCKET_PREFIX = "steam_game_descriptor/descriptions"
 
-	logging.info("Parsing %s descriptions", REQUEST_WINDOW_LIMIT)
+	logging.info("Parsing %s descriptions", batch_size)
 	with requests.Session() as s:
 		s.params = {"cc": "us", "l": "english"}
 
@@ -70,10 +70,10 @@ def upload_description_batch():
 
 			name = data["name"].replace("/", "-") # Replace / to avoid issues with Cloud Storage prefixes
 			path = f"{BUCKET_PREFIX}/{name}.txt"
-			utils.upload_to_gcs(filtered_text, utils.TEMP_BUCKET, BUCKET_PREFIX)
+			utils.upload_to_gcs(filtered_text, utils.TEMP_BUCKET, path)
 			success += 1
 
-	logging.info("Succesfully uploaded %s descriptions to %s/%s", success, utils.TEMP_BUCKET)
+	logging.info("Succesfully uploaded %s descriptions to %s/%s", success, utils.TEMP_BUCKET, BUCKET_PREFIX)
 
 def _get_app_id_list():
 	"""Fetch a list of games on the Steam store.

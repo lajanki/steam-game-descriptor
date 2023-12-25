@@ -5,6 +5,6 @@ cron:
   target: game-descriptor
 
 - description: "Game descriptor: batch parse new description content"
-  url: /_parse_descriptions
-  schedule: every 10 minutes from 01:00 to 01:15  # run twice a day
+  url: /_parse_descriptions?batch_size=200
+  schedule: every 10 minutes from 01:00 to 01:15  # ie. twice a day
   target: game-descriptor

@@ -59,8 +59,9 @@ def train_model():
 def parse_descriptions():
     """Cron only endpoint for parsing and uploading a new batch of descriptions to the data bucket."""
     if "X-Appengine-Cron" in request.headers:
-        parser.upload_description_batch()
-        return "OK", 200
+        batch_size = int(request.args.get("batch_size", 200))
+        parser.upload_description_batch(batch_size)
+        return "OK\n", 200
 
     abort(500, "Bad request")
 	
