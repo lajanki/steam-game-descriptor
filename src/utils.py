@@ -2,13 +2,10 @@ import os
 import os.path
 import json
 
-from dotenv import load_dotenv
 from google.cloud import storage
 
 
-load_dotenv(".env.dev")
 
-ENV = os.getenv("ENV", "dev")
 MODEL_BUCKET = os.environ["MODEL_BUCKET"]
 TEMP_BUCKET = os.environ["TEMP_BUCKET"]
 
