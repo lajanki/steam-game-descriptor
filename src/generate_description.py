@@ -19,8 +19,17 @@ SEED_FILE = os.path.join("data", "seeds.json")
 
 
 class DescriptionGenerator():
+	"""Generate a formatted game description consisting of
+	 * a title
+	 * >= 1 main description paragraphs
+	 * >= 0 sub sections with titles
+	 * >= 0 bullet point list of features
+	 * randomly selected tags
+	 * developer name
+	"""
 
 	def __init__(self):
+		"""Load pre-trained generators for description and title."""
 		self.markov_generator = generator.Generator("model.pkl")
 		self.title_generator = generator.Generator("model_titles.pkl")
 
@@ -101,48 +110,6 @@ def create_config():
 		"features": num_of_features,
 		"subsections": num_of_subsections
 	}
-
-# def generate_game_title():
-# 	"""Generate a random title based on a local nltk POS tags map file.
-# 	A valid title:
-# 	  * does not start with a particle
-# 	  * does not end with pronoun, determiner or a conjunction
-# 	DEPRECATED: replaces with separate Markov model based generator. nltk POS tags often
-# 		provide word clouds without meaning.
-# 	"""
-# 	title_length = random.randint(1, 3)
-# 	VALID_BASE_TAGS = ('NOUN', 'VERB', 'ADJ', 'DET', 'ADP', 'NUM', 'PRT', 'CONJ', 'PRON', 'ADV')
-
-# 	if title_length == 1:
-# 		title_tags = [random.choice([tag for tag in VALID_BASE_TAGS if tag not in ("PRON", "DET", "CONJ")])]
-
-# 	elif title_length == 2:
-# 		title_tags = [random.choice(tag) for tag in 
-# 			[
-# 				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT")],
-# 				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT", "DET", "CONJ")]
-# 			]
-# 		]
-
-# 	elif title_length == 3:
-# 		title_tags = [random.choice(tag) for tag in 
-# 			[
-# 				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT")],
-# 				VALID_BASE_TAGS,
-# 				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT", "DET", "CONJ")]
-# 			]
-# 		]
-
-# 	# Fetch matching words from file.
-# 	title = []
-# 	with open(POS_TAG_FILE) as f:
-# 		pos_map = json.load(f)
-
-# 	for tag in title_tags:
-# 		title.append(random.choice(pos_map[tag]))
-
-# 	title = " ".join(title) 
-# 	return title.title()
 
 def generate_tags():
 	"""Choose 2-5 random game tags from file."""

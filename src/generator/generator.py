@@ -5,16 +5,19 @@ from src import utils
 
 
 class Generator:
+	"""The main function of a Generator is to create text from a pre-trained model.
+	Args:
+		model_name (str): name of the trained model to load from Cloud Storage.
+	"""
 
-	def __init__(self, filename):
-		self.filename = filename
-		self.model = self._load_model()
+	def __init__(self, model_name):
+		self.model = self._load_model(model_name)
 
-		# Set initial model key to a random key of the model
+		# Set the initial key to start the text generation to a random key in the model
 		self._key = random.choice(list(self.model))
 
-	def _load_model(self):
-		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, self.filename)
+	def _load_model(self, name):
+		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, name)
 		return pickle.loads(model_data)
 
 	def generate(self, seed=None, size=25, complete_sentence=False, continue_until_valid=False):

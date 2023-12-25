@@ -5,3 +5,5 @@ entrypoint: gunicorn -b :$PORT main:app --timeout 600
 instance_class: F2  # 512 MB of memory
 env_variables:
   ENV: prod
+  MODEL_BUCKET: prod_steam_game_descriptor_data
+  TEMP_BUCKET: prod_temp_lf345f
