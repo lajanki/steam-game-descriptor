@@ -36,7 +36,9 @@ def generate_game_description():
 
 @app.route("/_train")
 def train_model():
-    """Cron only endpoint for training a new model."""
+    """Cron only endpoint for training new description models.
+    Existing models in the model bucket will be overwritten.
+    """
     # Only respond to cron request from App Engine
     # (The X- headers are stripped by App Engine when they originate from external sources)
     # https://cloud.google.com/appengine/docs/standard/python3/scheduling-jobs-with-cron-yaml#validating_cron_requests
@@ -49,7 +51,7 @@ def train_model():
         t = trainer.Trainer(names_text, "model_titles.pkl", 2)
         t.run()
 
-        return "OK", 200
+        return "OK\n", 200
 
     abort(500, "Bad request")
     

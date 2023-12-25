@@ -35,6 +35,7 @@ def upload_description_batch():
 	app_id_list = _get_app_id_list()
 	sample = random.sample(app_id_list, REQUEST_WINDOW_LIMIT)
 	URL = "https://store.steampowered.com/api/appdetails"
+	BUCKET_PREFIX = "steam_game_descriptor/descriptions"
 
 	logging.info("Parsing %s descriptions", REQUEST_WINDOW_LIMIT)
 	with requests.Session() as s:
@@ -68,11 +69,11 @@ def upload_description_batch():
 			filtered_text = html_description_to_text(description)
 
 			name = data["name"].replace("/", "-") # Replace / to avoid issues with Cloud Storage prefixes
-			path = f"steam_game_descriptor/descriptions/{name}.txt"
-			utils.upload_to_gcs(filtered_text, utils.TEMP_BUCKET, path)
+			path = f"{BUCKET_PREFIX}/{name}.txt"
+			utils.upload_to_gcs(filtered_text, utils.TEMP_BUCKET, BUCKET_PREFIX)
 			success += 1
 
-	logging.info("Succesfully uploaded %s descriptions", success)
+	logging.info("Succesfully uploaded %s descriptions to %s/%s", success, utils.TEMP_BUCKET)
 
 def _get_app_id_list():
 	"""Fetch a list of games on the Steam store.
