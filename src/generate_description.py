@@ -5,7 +5,6 @@ import random
 import re
 import json
 import string
-from collections import defaultdict
 
 import markdown
 
@@ -171,7 +170,7 @@ def generate_developer():
 		template = template.replace("{{?}}", word)
 
 	for tag_template in re.findall("{{[A-Z]+}}", template):
-		tag = tag_template[2:-2]  # tag name wihtin {{ }}
+		tag = tag_template[2:-2]  # tag name within {{ }}
 
 		k = random.randint(1,2)
 		new_words = random.sample(pos_map[tag], k)
@@ -179,24 +178,3 @@ def generate_developer():
 
 	# return a properly capitalized word
 	return template.strip("- ").title()
-
-def create_title_file():
-	"""Creating a json mapping of POS tag -> word from the nltk Brown Corpus.
-	https://www.nltk.org/book/ch02.html
-	Note: this required setting up nltk module with the Brown Corpus data, see
-	https://www.nltk.org/install.html
-	""" 
-	import nltk
-
-	d = defaultdict(set) # use a set since there's no need for duplicates
-	tags = nltk.corpus.brown.tagged_words(tagset="universal") 
-	for token in tags:
-		if not token[0].startswith("'"):
-			d[token[1]].add(token[0])
-
-	# transform values back to list for dumping 
-	for tag in d:
-		d[tag] = list(d[tag])
-		
-	with open(POS_TAG_FILE, "w") as f:
-		json.dump(d, f, separators=(',', ':'))
