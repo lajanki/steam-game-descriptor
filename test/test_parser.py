@@ -1,9 +1,9 @@
 from src import parser
 
 
-def test_description_parsing():
+def test_description_parsing_on_html_tags():
+    """Are html tags remoevd and whitespace added between where a newline would be originalyl rendered?"""
 
-    # html tags are stipped, whitespace added around consecutive words
     html = '<h2 class="bb_tag"><strong>INTRODUCTION</strong></h2><strong>Fight against all odds and repel an entire army from the great city of Itenbaal! \
     </strong><br><br>Without warning, an experimental battalion composed entirely of humadroids went haywire during a sandstorm and turned on their \
     very own place of creation.'
@@ -12,11 +12,11 @@ def test_description_parsing():
     Without warning, an experimental battalion composed entirely of humadroids went haywire during a sandstorm and turned on their \
     very own place of creation.'
 
-    # compare word list to avoid whitespace differences
+    # Compare word list to avoid whitespace differences
     assert parser.html_description_to_text(html).split() == expected.split()
 
 
-    # more tag filtering
+    # More tag filtering with an img src reference
     html = '</strong><br><br>Newgame+ is more than just a higher difficulty, more vicous enemies and boss encounters awaits you ahead! \
     <br><br><img src="https://cdn.akamai.steamstatic.com/steam/apps/359970/extras/Encounter.png?t=1608617814" />'
     
@@ -24,16 +24,16 @@ def test_description_parsing():
 
     assert parser.html_description_to_text(html).split() == expected.split()
 
-
-    # whitespacing between tags
+def test_description_parsing_with_whitespacing():
+    """Is a whitespace added between sentences where a linebreak was originally rendered?"""
     html = 'low-maintenance as possible!<br><br><i>Which makes the current situation much worse. </i><br>'
-    
     expected = 'low-maintenance as possible! Which makes the current situation much worse.'
 
     assert parser.html_description_to_text(html).split() == expected.split()
 
 
-    # keywords are removed (wrap around <p> tags to avoid Beautifulsoup interpreting input as filepath)
+def test_description_parsing_on_special_tokens():
+    """Are Twitter handles and other blacklisted tokens filtered?"""
     text = "<p>Wes Smith of Juice Recordings, San DiegoFollow us on fb.com/playrise and Twitter @PlayriseDigitalMore \
     information at the Playrise Digital website www.playrisedigital.com *Please adhere to the laws and age</p>"
     
@@ -41,5 +41,3 @@ def test_description_parsing():
     information at the Playrise Digital website *Please adhere to the laws and age"
 
     assert parser.html_description_to_text(text).split() == expected.split()
-
-
