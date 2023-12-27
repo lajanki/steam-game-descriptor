@@ -3,8 +3,11 @@ service: game-descriptor
 runtime: python310
 entrypoint: gunicorn -b :$PORT main:app --timeout 600
 instance_class: F4  # 1536 MB of memory
+service_account: game-descriptor-worker@webhost-common.iam.gserviceaccount.com
+
 automatic_scaling:
   max_instances: 3
+
 env_variables:
   MODEL_BUCKET: prod_steam_game_descriptor_data
   TEMP_BUCKET: prod_temp_lf345f
