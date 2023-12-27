@@ -1,14 +1,13 @@
+import os
 import os.path
 import json
-from time import time
 
 from google.cloud import storage
 
 
 
-ENV = os.getenv("ENV", "dev")
-MODEL_BUCKET = f"{ENV}_steam_game_descriptor_data"
-TEMP_BUCKET = f"{ENV}_temp_lf345f"
+MODEL_BUCKET = os.environ["MODEL_BUCKET"]
+TEMP_BUCKET = os.environ["TEMP_BUCKET"]
 
 gcs_client = storage.Client()
 
@@ -25,7 +24,7 @@ def download_from_gcs(bucket, path):
 	blob = bucket.get_blob(path)
 	return blob.download_as_bytes()
 
-def download_descriptions():
+def download_descriptions_as_text():
 	"""Download all descriptions currently in temp bucket."""
 	blobs = gcs_client.list_blobs(TEMP_BUCKET, prefix="steam_game_descriptor/descriptions")
 	results = []

@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
-from src import generate_description
+with patch("google.cloud.storage.Client"):
+    from src import generate_description
 
 
 @patch("random.randint")

@@ -26,16 +26,18 @@ from bs4 import BeautifulSoup
 from src import utils
 
 
-REQUEST_WINDOW_LIMIT = 200
 
-
-def get_descriptions():
-	"""Send a single asynch API request for an app description matching the input parameters."""
-	app_id_list = get_app_id_list()
-	sample = random.sample(app_id_list, REQUEST_WINDOW_LIMIT)
+def upload_description_batch(batch_size=200):
+	"""Upload a randomly selected batch of Steam game descriptions to the data bucket.
+	Args:
+		batch_size (int): sample size of descriptions to parse.
+	"""
+	app_id_list = _get_app_id_list()
+	sample = random.sample(app_id_list, batch_size)
 	URL = "https://store.steampowered.com/api/appdetails"
+	BUCKET_PREFIX = "steam_game_descriptor/descriptions"
 
-	logging.info("Parsing %s descriptions", REQUEST_WINDOW_LIMIT)
+	logging.info("Parsing %s descriptions", batch_size)
 	with requests.Session() as s:
 		s.params = {"cc": "us", "l": "english"}
 
@@ -53,7 +55,6 @@ def get_descriptions():
 				logging.info("Excluding type: '%s', appid: %s", data["type"], app_id)
 				continue
 
-			# description is likely not in english, if it's not a supported language
 			if "english" not in data.get("supported_languages", "english").lower():
 				logging.info("English not in supported languages, appid: %s, skipping...", app_id)
 				continue
@@ -68,14 +69,16 @@ def get_descriptions():
 			filtered_text = html_description_to_text(description)
 
 			name = data["name"].replace("/", "-") # Replace / to avoid issues with Cloud Storage prefixes
-			path = f"steam_game_descriptor/descriptions/{name}.txt"
+			path = f"{BUCKET_PREFIX}/{name}.txt"
 			utils.upload_to_gcs(filtered_text, utils.TEMP_BUCKET, path)
 			success += 1
 
-	logging.info("Succesfully uploaded %s descriptions", success)
+	logging.info("Succesfully uploaded %s descriptions to %s/%s", success, utils.TEMP_BUCKET, BUCKET_PREFIX)
 
-def get_app_id_list():
-	"""Fetch a list of games on the Steam store and their descriptions."""
+def _get_app_id_list():
+	"""Fetch a list of games on the Steam store.
+	Return:
+		list of app ids"""
 	r = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2")
 	app_list = r.json()["applist"]["apps"]
 	# excude trailers, soundtracks and demos
@@ -87,21 +90,21 @@ def get_app_id_list():
 	return app_ids
 
 def get_app_names():
-	"""Fetch a list of app names as string."""
+	"""Fetch a list of app names as a single joined string."""
 	r = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2")
 	app_list = r.json()["applist"]["apps"]
 	# Assert at least one ASCII chracter in the name
 	names = [ app["name"] for app in app_list if any(c in app["name"] for c in string.ascii_uppercase) ]
 
-	# Return a string suitable for trainer
 	return " ".join(names)
 
 def html_description_to_text(description):
+	"""Convert a html game description to a regular text description."""
 	soup = BeautifulSoup(description, "html.parser")
 	tokens = [item.text for item in soup.contents if item.text]
 	text = " ".join(tokens)
 
-	# remove words containing urls, Twitter handles, etc.
+	# Remove words containing urls, Twitter contact handles, etc.
 	words = text.split()
 	blacklist = ("http://", "https://", "www", "@", "/img", "/list", ".com")
 	filtered = [word for word in words if not any(item in word.lower() for item in blacklist)]

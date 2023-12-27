@@ -5,7 +5,6 @@ import random
 import re
 import json
 import string
-from collections import defaultdict
 
 import markdown
 
@@ -19,8 +18,17 @@ SEED_FILE = os.path.join("data", "seeds.json")
 
 
 class DescriptionGenerator():
+	"""Generate a formatted game description consisting of
+	 * a title
+	 * >= 1 main description paragraphs
+	 * >= 0 sub sections with titles
+	 * >= 0 bullet point list of features
+	 * randomly selected tags
+	 * developer name
+	"""
 
 	def __init__(self):
+		"""Load pre-trained generators for description and title."""
 		self.markov_generator = generator.Generator("model.pkl")
 		self.title_generator = generator.Generator("model_titles.pkl")
 
@@ -102,48 +110,6 @@ def create_config():
 		"subsections": num_of_subsections
 	}
 
-# def generate_game_title():
-# 	"""Generate a random title based on a local nltk POS tags map file.
-# 	A valid title:
-# 	  * does not start with a particle
-# 	  * does not end with pronoun, determiner or a conjunction
-# 	DEPRECATED: replaces with separate Markov model based generator. nltk POS tags often
-# 		provide word clouds without meaning.
-# 	"""
-# 	title_length = random.randint(1, 3)
-# 	VALID_BASE_TAGS = ('NOUN', 'VERB', 'ADJ', 'DET', 'ADP', 'NUM', 'PRT', 'CONJ', 'PRON', 'ADV')
-
-# 	if title_length == 1:
-# 		title_tags = [random.choice([tag for tag in VALID_BASE_TAGS if tag not in ("PRON", "DET", "CONJ")])]
-
-# 	elif title_length == 2:
-# 		title_tags = [random.choice(tag) for tag in 
-# 			[
-# 				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT")],
-# 				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT", "DET", "CONJ")]
-# 			]
-# 		]
-
-# 	elif title_length == 3:
-# 		title_tags = [random.choice(tag) for tag in 
-# 			[
-# 				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT")],
-# 				VALID_BASE_TAGS,
-# 				[tag for tag in VALID_BASE_TAGS if tag not in ("PRT", "DET", "CONJ")]
-# 			]
-# 		]
-
-# 	# Fetch matching words from file.
-# 	title = []
-# 	with open(POS_TAG_FILE) as f:
-# 		pos_map = json.load(f)
-
-# 	for tag in title_tags:
-# 		title.append(random.choice(pos_map[tag]))
-
-# 	title = " ".join(title) 
-# 	return title.title()
-
 def generate_tags():
 	"""Choose 2-5 random game tags from file."""
 	with open(TAG_FILE) as f:
@@ -204,7 +170,7 @@ def generate_developer():
 		template = template.replace("{{?}}", word)
 
 	for tag_template in re.findall("{{[A-Z]+}}", template):
-		tag = tag_template[2:-2]  # tag name wihtin {{ }}
+		tag = tag_template[2:-2]  # tag name within {{ }}
 
 		k = random.randint(1,2)
 		new_words = random.sample(pos_map[tag], k)
@@ -212,24 +178,3 @@ def generate_developer():
 
 	# return a properly capitalized word
 	return template.strip("- ").title()
-
-def create_title_file():
-	"""Creating a json mapping of POS tag -> word from the nltk Brown Corpus.
-	https://www.nltk.org/book/ch02.html
-	Note: this required setting up nltk module with the Brown Corpus data, see
-	https://www.nltk.org/install.html
-	""" 
-	import nltk
-
-	d = defaultdict(set) # use a set since there's no need for duplicates
-	tags = nltk.corpus.brown.tagged_words(tagset="universal") 
-	for token in tags:
-		if not token[0].startswith("'"):
-			d[token[1]].add(token[0])
-
-	# transform values back to list for dumping 
-	for tag in d:
-		d[tag] = list(d[tag])
-		
-	with open(POS_TAG_FILE, "w") as f:
-		json.dump(d, f, separators=(',', ':'))

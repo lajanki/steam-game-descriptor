@@ -1,6 +1,3 @@
-# Markov text generator Trainer.
-# Trains a new model based on descriptions in the data bucket. 
-
 import collections
 import statistics
 import logging
@@ -11,6 +8,18 @@ from src import utils
 
 
 class Trainer():
+	"""Trainer creates ('trains') a Markov text chain model by splitting source text into ngrams
+	and keeping track of which n-1 word chains is followed by the remaining word. Trainers are
+	stored in Google Cloud Storage bucket for later access.
+
+	A separate Generator instance can then use this to generate new text where every n consecutive
+	words appear somewhere in the original source text.
+
+	Args:
+		train_text_data (str): The source text to parse as ngrams
+		filename (str): name of the model to use when storing in Cloud Storage
+		n (int): ngram size; the number of consecutive words to parse the original text
+	"""
 
 	def __init__(self, train_text_data, filename, n=3):
 		self.n = n
