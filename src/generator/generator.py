@@ -105,9 +105,10 @@ class Generator:
 		Return:
 			the normalized sentence as a string
 		"""
-		# Capitalize and strip the first word (calling capitalize() on the whole string would
-		# decapitalize everyting else).
-		tokens[0] = tokens[0].capitalize().strip()
+		# Ensure the first word is capitalized.
+		if tokens[0] != tokens[0].upper():
+			tokens[0] = tokens[0].capitalize().strip()
+			
 		text = " ".join(tokens)
 		replacements = {
 			",.": ".",
