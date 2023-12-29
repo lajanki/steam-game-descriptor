@@ -31,6 +31,8 @@ class DescriptionGenerator():
 		"""Load pre-trained generators for description and title."""
 		self.markov_generator = generator.Generator("model.pkl")
 		self.title_generator = generator.Generator("model_titles.pkl")
+		self.feature_generator = generator.Generator("model_features.pkl")
+
 
 	def __call__(self):
 		"""Generate a description with random number of paragraphs and content types."""
@@ -76,7 +78,7 @@ class DescriptionGenerator():
 		feature_list = []
 		for _ in range(self.config["features"]):
 			size = min(random.gauss(12, 4), 22) # features should be short
-			feature = f" * {self.markov_generator.generate(size=size, complete_sentence=True)}"
+			feature = f" * {self.feature_generator.generate(size=size, complete_sentence=True)}"
 			feature_list.append(feature)
 
 		if feature_list:
