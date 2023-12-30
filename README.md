@@ -28,27 +28,49 @@ Hosted on Google App Engine.
 
 ## Running locally
 Install Python packages with  
-```
+```bash
 pip install -r requirements.txt
 ```  
 Then, run in localhost with
-```
+```bash
 python main.py
 ```
 
+Maitenance requests for training new models can be tested locally by settings required headers with something like:
+```bash
+curl 127.0.0.1:5000/_parse_descriptions -H "X-Appengine-Cron: 1"
+```
+for parsing a new batch of game descriptions from Steam Store, and
+```bash
+curl 127.0.0.1:5000/_train -H "X-Appengine-Cron: 1"
+```
+For training new models (but see also below).
+
+### Adding new models
+The script `setup_gcs_models.py` can be run locally, without Flask application context, to save model changes to the Cloud Storage bucket.
+While the `/_train` endpoint performs the same action, it is mainly intended for periodically re-training existing models. The
+Flask application assumes all listed models are present in the storage bucket at all times.
+
+When adding new models, run the following to update the model files in the production bucket:
+```bash
+python setup_gcs_models.py --env prod
+```
+
+
 ## Unit tests
 Unit tests can be run from the root folder with
-```
+```bash
 pytest
 ```
 
 ## Deploy to Google App Engine
 To deploy as an App Engine service, install the [gcloud CLI tool](https://cloud.google.com/sdk/gcloud) and run
-```
+```bash
 gcloud app deploy
 ```
 This does not deploy scheduling from `cron.yaml`. To do that, run
-```
+```bash
 gcloud app deploy cron.yaml
 ```
-Note that scheduling is App Engine specific and will overwerite any existing scheduling.
+
+> **_NOTE:_**  App Engine scheduling applies at the application level; this will overwrite any existing scheduling for all other services.
