@@ -33,11 +33,11 @@ class Generator:
 			the generated text
 		"""
 		words = []
-		model_keys = list(self.model.keys())
 
 		# If a seed was provided and it is found in the model, initialize text with it and
 		# use the last n-1 (ie. key length) words as the key.
 		if seed:
+			model_keys = list(self.model.keys())
 			seed_tokens = seed.split()
 			key_length = len(model_keys[0])
 			key = tuple(seed_tokens[-key_length:])
@@ -84,7 +84,7 @@ class Generator:
 		"""
 		next_word = random.choice(list(self.model[self._key]))
 
-		# Update current key: shift to the right once and the new word
+		# Update current key: shift to the right once and add the new word
 		self._key = (*self._key[1:], next_word)
 
 		return next_word
