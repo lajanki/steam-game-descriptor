@@ -8,8 +8,8 @@ from flask import (
     abort
 )
 
-from src import generate_description, parser, utils
-from src.generator import trainer
+from src import generate_description, parser
+import setup_gcs_models
 
 
 
@@ -43,20 +43,7 @@ def train_model():
     # (The X- headers are stripped by App Engine when they originate from external sources)
     # https://cloud.google.com/appengine/docs/standard/python3/scheduling-jobs-with-cron-yaml#validating_cron_requests
     if "X-Appengine-Cron" in request.headers:
-        logging.info("Creating a new description model")
-        description_text = utils.download_descriptions_as_text()
-        t = trainer.Trainer(description_text, "model.pkl")
-        t.run()
-
-        logging.info("Creating a new title model")
-        names_text = parser.get_app_names()
-        t = trainer.Trainer(names_text, "model_titles.pkl", 2)
-        t.run()
-
-        logging.info("Creating a new feature model")
-        feature_text = utils.get_text_file("data/features.txt")
-        t = trainer.Trainer(feature_text, "model_features.pkl")
-        t.run()
+        setup_gcs_models.setup()
 
         return "OK\n", 200
 
