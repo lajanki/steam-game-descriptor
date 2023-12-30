@@ -106,6 +106,6 @@ def html_description_to_text(description):
 
 	# Remove words containing urls, Twitter contact handles, etc.
 	words = text.split()
-	blacklist = ("http://", "https://", "www", "@", "/img", "/list", ".com")
+	blacklist = ("http://", "https://", "www", "@", "/img", "/list", ".com", "features")
 	filtered = [word for word in words if not any(item in word.lower() for item in blacklist)]
 	return " ".join(filtered)
