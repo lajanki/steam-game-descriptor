@@ -34,3 +34,8 @@ def download_descriptions_as_text():
 		results.append(data_string)
 	
 	return " ".join(results)
+
+def get_text_file(filename):
+	"""Get contents from a text file."""
+	with open(filename) as f:
+		return f.read().strip()

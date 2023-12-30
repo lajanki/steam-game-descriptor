@@ -100,3 +100,25 @@ def test_sentence_completion(mock_get_word):
     mock_get_word.side_effect = ["a", "b", "C", "D", "E", "and"]
     res = g.generate(complete_sentence=True, size=3)
     assert res == "A b C D E."
+
+def test_output_cleanup():
+    """Are special characters removed during string cleanup?"""
+    with patch("src.generator.generator.Generator._load_model") as mock_load_model:
+        mock_load_model.return_value = {
+            ('If', 'you'): ['can'],
+            ('you', 'can'): ['look']
+        }
+
+        g = generator.Generator("")
+
+    # 1st word capitalized
+    tokens = "upgrade and expand your".split()
+    assert g.cleanup(tokens) == "Upgrade and expand your"
+
+    # 1st word not changed if already uppercase
+    tokens = "EMP devices to aid in your stealthy endeavors.".split()
+    assert g.cleanup(tokens) == "EMP devices to aid in your stealthy endeavors."
+
+    # Special characters are replaced
+    tokens = "there are those who (call me) heroic®".split()
+    assert g.cleanup(tokens) == "There are those who call me heroic"

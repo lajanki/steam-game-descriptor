@@ -106,39 +106,6 @@ def html_description_to_text(description):
 
 	# Remove words containing urls, Twitter contact handles, etc.
 	words = text.split()
-	blacklist = ("http://", "https://", "www", "@", "/img", "/list", ".com")
+	blacklist = ("http://", "https://", "www", "@", "/img", "/list", ".com", "features")
 	filtered = [word for word in words if not any(item in word.lower() for item in blacklist)]
 	return " ".join(filtered)
-
-def cleanup(description):
-	"""Cleanup the description string: remove extra and add missing whitespace around puncutation."""
-
-	# Extra whitespace before punctuation
-	replacements = {
-		" .": ".",
-		" ,": ",",
-		" :": ":",
-		" !": "!",
-		" ?": "?",
-		" ;": ";"
-	}
-	for old, new in replacements.items():
-		description = description.replace(old, new)
-
-
-	# Missing whitespace after punctuation
-	for word in description.split():
-		if len(word) > 3:
-			# period: add missing space after if not an email or url
-			for char in (".", ":"):
-				if char in word[:-1] and not any([token in word for token in ("@", "http", "...", "www")]):
-					new_word = word.replace(char, char + " ")
-					description = description.replace(word, new_word)
-
-			# other characters: add the space and strip any extra space at the end
-			for char in (",", "!", "?", ";"):
-				if char in word[:-1]:
-					new_word = word.replace(char, char + " ")
-					description = description.replace(word, new_word)
-
-	return description
