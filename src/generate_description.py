@@ -32,6 +32,7 @@ class DescriptionGenerator():
 		self.markov_generator = generator.Generator("model.pkl")
 		self.title_generator = generator.Generator("model_titles.pkl")
 		self.feature_generator = generator.Generator("model_features.pkl")
+		self.taglines_generator = generator.Generator("model_taglines.pkl")
 
 
 	def __call__(self):
@@ -51,6 +52,11 @@ class DescriptionGenerator():
 		title = string.capwords(title.rstrip(".")) # use string.capwords to avoid issues with apostrophes
 		title = title.replace(".", ":")
 		paragraphs.append(f"## {title}")
+
+		# tagline
+		tagline = ""
+		if self.config["tagline"]:
+			tagline = self.taglines_generator.generate(size=4, complete_sentence=True)
 
 		# main description
 		for _ in range(self.config["paragraphs"]):
@@ -91,6 +97,7 @@ class DescriptionGenerator():
 
 		return {
 			"description": html,
+			"tagline": tagline,
 			"tags":	generate_tags(),
 			"developer": generate_developer()
 		}
@@ -109,7 +116,8 @@ def create_config():
 	return {
 		"paragraphs": random.randint(1,2),
 		"features": num_of_features,
-		"subsections": num_of_subsections
+		"subsections": num_of_subsections,
+		"tagline": random.randint(0,1)
 	}
 
 def generate_tags():

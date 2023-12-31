@@ -41,6 +41,11 @@ def setup():
     t = trainer.Trainer(feature_text, "model_features.pkl")
     t.run()
 
+    logging.info("Creating a new tagline model...")
+    taglines_text = utils.get_text_file("data/taglines.txt")
+    t = trainer.Trainer(taglines_text, "model_taglines.pkl")
+    t.run()
+
     logging.info("Models saved in gs://%s", utils.MODEL_BUCKET)
     
 

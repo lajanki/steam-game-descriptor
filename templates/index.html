@@ -42,6 +42,7 @@
 						request.setRequestHeader("X-Button-Callback", "true");
 						// Hide description content and display the loader
 						$("#description").text("");
+						$("#tagline").text("");
 						$("#developer").text("");
 						$("#tags").text("");
 						$("#loader").show();
@@ -52,6 +53,7 @@
 						// Set description content and hide loader
 						$("#loader").hide();
 						$("#description").html(data.description);
+						$("#tagline").html("<i>" +  data.tagline + "</i>");
 
 						var developer = "Developer: " + data.developer
 						$("#developer").text(developer);
@@ -68,6 +70,7 @@
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
 						$("#description").html("<h1>Something went wrong, try again</h1>");
+						$("#tagline").text("");
 						$("#developer").text("");
 						$("#tags").text("");
 						$("#loader").hide();
@@ -97,6 +100,7 @@
 				<div class="card">
 					<div class="card-body">
 						<div id="description"></div>
+						<div id="tagline"></div>
 						<div id="developer"></div>
 						<div id="tags"></div>
 
