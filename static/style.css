@@ -111,6 +111,10 @@ body {
 	padding: 3px;
 }
 
+#tagline {
+	margin-bottom: 15px;
+}
+
 #developer {
 	margin-bottom: 10px;
 	color: #040406;
