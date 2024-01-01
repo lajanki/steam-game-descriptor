@@ -32,6 +32,7 @@ class DescriptionGenerator():
 		self.markov_generator = generator.Generator("model.pkl")
 		self.title_generator = generator.Generator("model_titles.pkl")
 		self.feature_generator = generator.Generator("model_features.pkl")
+		self.taglines_generator = generator.Generator("model_taglines.pkl")
 
 
 	def __call__(self):
@@ -43,36 +44,46 @@ class DescriptionGenerator():
 		with open(SEED_FILE) as f:
 			seeds = json.load(f)
 
-		paragraphs = []
+		main_sections = []
 
 		# title 
 		size = random.randint(1,4)
 		title = self.title_generator.generate(size=size, continue_until_valid=True)
 		title = string.capwords(title.rstrip(".")) # use string.capwords to avoid issues with apostrophes
 		title = title.replace(".", ":")
-		paragraphs.append(f"## {title}")
+		main_sections.append(f"## {title}")
+
+		# tagline
+		tagline = ""
+		if self.config["tagline"]:
+			tagline = self.taglines_generator.generate(size=4, complete_sentence=True)
 
 		# main description
 		for _ in range(self.config["paragraphs"]):
 			size = int(abs(random.gauss(15, 3.0)))
 			seed = random.choice(seeds["text"])
 			paragraph = self.markov_generator.generate(seed=seed, size=size, complete_sentence=True)
-			paragraphs.append(paragraph)
+			main_sections.append(paragraph)
 			seed = None
 
+		description = "\n".join(main_sections)
+		description_html = markdown.markdown(description)
+
 		# sub sections with headers
+		sub_sections = []
 		for _ in range(self.config["subsections"]):
 			seed = random.choice(seeds["headers"])
 			header = self.markov_generator.generate(seed=seed, size=3, continue_until_valid=True)
 			header = string.capwords(header.rstrip("."))
-			paragraphs.append(f"#### {header}")
+			sub_sections.append(f"#### {header}")
 
 			self.markov_generator.ff_to_next_sentence()
 			size = int(abs(random.gauss(15, 3.0)))
 			paragraph = self.markov_generator.generate(size=size, complete_sentence=True)
-			paragraphs.append(paragraph)
+			sub_sections.append(paragraph)
 
-		description = "\n".join(paragraphs)
+		sections_text = "\n".join(sub_sections)
+		sections_html = markdown.markdown(sections_text)
 
 		# list of features
 		feature_list = []
@@ -87,10 +98,13 @@ class DescriptionGenerator():
 		else:
 			features = ""
 
-		html = markdown.markdown(description + "\n\n" + features)
+		features_html = markdown.markdown(features)
 
 		return {
-			"description": html,
+			"description": description_html,
+			"subsections": sections_html,
+			"features": features_html,
+			"tagline": tagline,
 			"tags":	generate_tags(),
 			"developer": generate_developer()
 		}
@@ -109,7 +123,8 @@ def create_config():
 	return {
 		"paragraphs": random.randint(1,2),
 		"features": num_of_features,
-		"subsections": num_of_subsections
+		"subsections": num_of_subsections,
+		"tagline": random.randint(0,1)
 	}
 
 def generate_tags():
