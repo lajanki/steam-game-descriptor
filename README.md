@@ -20,7 +20,7 @@ The application consists of three parts:
  1. **text generation**  
     The user facing side of the webapp. This involves fetching the model and querying it for a sequence of words:
 
-![Webapp flows](./overview.drawio.png)
+![Webapp flows](./overview.png)
 
  
 Hosted on Google App Engine.
@@ -33,12 +33,12 @@ pip install -r requirements.txt
 ```  
 Then, run in localhost with
 ```bash
-python main.py
+flask --app main:app run --debug
 ```
 
 Maitenance requests for training new models can be tested locally by settings required headers with something like:
 ```bash
-curl 127.0.0.1:5000/_parse_descriptions -H "X-Appengine-Cron: 1"
+curl "127.0.0.1:5000/_parse_descriptions?batch_size=40" -H "X-Appengine-Cron: 1"
 ```
 for parsing a new batch of game descriptions from Steam Store, and
 ```bash
@@ -64,13 +64,4 @@ pytest
 ```
 
 ## Deploy to Google App Engine
-To deploy as an App Engine service, install the [gcloud CLI tool](https://cloud.google.com/sdk/gcloud) and run
-```bash
-gcloud app deploy
-```
-This does not deploy scheduling from `cron.yaml`. To do that, run
-```bash
-gcloud app deploy cron.yaml
-```
-
-> **_NOTE:_**  App Engine scheduling applies at the application level; this will overwrite any existing scheduling for all other services.
+Deployed to App Engine through GitHub Actions workflow.
