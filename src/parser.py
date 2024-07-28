@@ -3,28 +3,29 @@
 # and the undocumented store.steampowered.com/api for actual descriptions.
 # See https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI
 # for community wiki on store.steampowered.com usage.
-# 
+#
 # The Steam database contains >73 000 game titles. Rather than parsing all of them, only a small sample
 # is stored in the bucket at any one time.
-# 
+#
 # According to the community wiki:
 # If you request information about more than 1 appid, you'll need to set filters parameter to value "price_overview,"
 # otherwise the server will respond with a "null" and the status code 400 Bad Request.
 # If you use multiple appids and try to use multiple filters or any other filter, the server will respond with null.
 # This might be a bug from steam's server side.
-# 
+#
 # The API is rate limited (possibly 200 requests per 5 minute window?)
 # https://www.reddit.com/r/Steam/comments/304dft/steam_store_api_is_there_a_throttling_limit_on/
 
 
+import json
+import logging
+import os
 import random
 import requests
-import logging
 import string
 
 from bs4 import BeautifulSoup
 from src import utils
-
 
 
 def upload_description_batch(batch_size=200):
@@ -35,7 +36,7 @@ def upload_description_batch(batch_size=200):
 	app_id_list = _get_app_id_list()
 	sample = random.sample(app_id_list, batch_size)
 	URL = "https://store.steampowered.com/api/appdetails"
-	BUCKET_PREFIX = "steam_game_descriptor/descriptions"
+	TEMP_BUCKET_PREFIX = os.environ["TEMP_BUCKET_PREFIX"]
 
 	logging.info("Parsing %s descriptions", batch_size)
 	with requests.Session() as s:
@@ -51,6 +52,11 @@ def upload_description_batch(batch_size=200):
 				continue
 
 			data = r.json()[str(app_id)]["data"]
+			description = data.get("detailed_description")
+			if not description:
+				logging.info("No description detected, appid: %s, skipping...", app_id)
+				continue
+
 			if data["type"].lower() not in ("game", "dlc", "demo", "advertising", "mod"):
 				logging.info("Excluding type: '%s', appid: %s", data["type"], app_id)
 				continue
@@ -59,21 +65,33 @@ def upload_description_batch(batch_size=200):
 				logging.info("English not in supported languages, appid: %s, skipping...", app_id)
 				continue
 
-			description = data.get("detailed_description")
-			if not description:
-				logging.info("No description detected, appid: %s, skipping...", app_id)
-				continue
+			# extract selected keys from the response and convert html string descriptions
+			# to plain strings. 
+			keys_to_extract = ["detailed_description", "pc_requirements"]
+			snapshot = {k:v for k,v in data.items() if k in keys_to_extract}
+			snapshot = extract_data_dict(snapshot)
+
 
 			# description is an html string, parse it as plain text and filter
 			# out some words.
-			filtered_text = html_description_to_text(description)
+			# filtered_text = html_description_to_text(description)
 
 			name = data["name"].replace("/", "-") # Replace / to avoid issues with Cloud Storage prefixes
-			path = f"{BUCKET_PREFIX}/{name}.txt"
-			utils.upload_to_gcs(filtered_text, utils.TEMP_BUCKET, path)
+			path = f"{TEMP_BUCKET_PREFIX}/{name}.json"
+			utils.upload_to_gcs(
+				json.dumps(snapshot),
+				utils.TEMP_BUCKET,
+				path,
+				content_type="application/json",
+			)
 			success += 1
 
-	logging.info("Succesfully uploaded %s descriptions to %s/%s", success, utils.TEMP_BUCKET, BUCKET_PREFIX)
+	logging.info(
+		"Succesfully uploaded %s descriptions to %s/%s",
+		success,
+		utils.TEMP_BUCKET,
+		TEMP_BUCKET_PREFIX,
+	)
 
 def _get_app_id_list():
 	"""Fetch a list of games on the Steam store.
@@ -98,14 +116,33 @@ def get_app_names():
 
 	return " ".join(names)
 
-def html_description_to_text(description):
+def _html_string_to_text(html_string):
 	"""Convert a html game description to a regular text description."""
-	soup = BeautifulSoup(description, "html.parser")
-	tokens = [item.text for item in soup.contents if item.text]
-	text = " ".join(tokens)
+	soup = BeautifulSoup(html_string, "html.parser")
+
+	# Extract text as a single string.
+	# Ignoring paragraphs matching a known header.
+	paragraphs = [
+		item
+		for item in soup.stripped_strings
+		if not item.lower().endswith(("story:", "features:", "about the game"))
+	]
+	text = " ".join(paragraphs)
 
 	# Remove words containing urls, Twitter contact handles, etc.
 	words = text.split()
 	blacklist = ("http://", "https://", "www", "@", "/img", "/list", ".com", "features")
 	filtered = [word for word in words if not any(item in word.lower() for item in blacklist)]
 	return " ".join(filtered)
+
+def extract_data_dict(dict_):
+	"""Utility function: recursively convert html strings to regular string from 
+	a dictionary of raw descriptions.
+	"""
+	for key, val in dict_.items():
+		if type(val) == str:
+			dict_[key] = _html_string_to_text(val)
+		elif type(val) == dict:
+			extract_data_dict(val)
+
+	return dict_
