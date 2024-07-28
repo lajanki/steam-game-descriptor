@@ -10,9 +10,9 @@ In short, a Markov model based text generator splits the training data as ngrams
 
 The application consists of three parts:
  1. **parsing for training data**  
-    The official [Steamworks API](https://partner.steamgames.com/doc/webapi/ISteamApps) does not support fetching actual application descriptions. Instead the undocumented API [store.steampowered.com/api](https://store.steampowered.com/api) is used (see also the community Wiki: [https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI](https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI))
+    The official [Steamworks API](https://partner.steamgames.com/doc/webapi/ISteamApps) does not support fetching application descriptions. Instead the undocumented API [store.steampowered.com/api](https://store.steampowered.com/api) is used. The community Wiki: [https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI](https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI) has a reference of the its endpoints.
 
-    This API is rate limited to 200 requests per 5 minute window(?) and when it comes to descriptions only supports making single requests at a time. To work wihtin these limits, only a small sample of all available Steam apps is used in the training and that sample is slowly fetched via multiple requests.
+    This API is rate limited (possibly to 200 requests per 5 minute window) and when it comes to descriptions only supports making single requests at a time. To work wihtin these limits, only a small sample of all available Steam apps is used in the training and that sample is slowly fetched via multiple requests.
 
  1. **training the model**  
     Model training is a simple matter of mapping every sequence of _n-1_ words to their successors. The model is serialized to a Google Cloud Storage bucket for later usage and retrained regularly.

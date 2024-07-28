@@ -71,11 +71,6 @@ def upload_description_batch(batch_size=200):
 			snapshot = {k:v for k,v in data.items() if k in keys_to_extract}
 			snapshot = extract_data_dict(snapshot)
 
-
-			# description is an html string, parse it as plain text and filter
-			# out some words.
-			# filtered_text = html_description_to_text(description)
-
 			name = data["name"].replace("/", "-") # Replace / to avoid issues with Cloud Storage prefixes
 			path = f"{TEMP_BUCKET_PREFIX}/{name}.json"
 			utils.upload_to_gcs(

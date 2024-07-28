@@ -1,5 +1,3 @@
-import argparse
-import logging
 from flask import (
     abort,
     Flask,
