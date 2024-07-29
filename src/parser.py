@@ -23,6 +23,7 @@ import os
 import random
 import requests
 import string
+from collections import defaultdict
 
 from bs4 import BeautifulSoup
 from src import utils
@@ -67,7 +68,7 @@ def upload_description_batch(batch_size=200):
 
 			# extract selected keys from the response and convert html string descriptions
 			# to plain strings. 
-			keys_to_extract = ["detailed_description", "pc_requirements"]
+			keys_to_extract = ["detailed_description", "pc_requirements", "mac_requirements", "linux_requirements"]
 			snapshot = {k:v for k,v in data.items() if k in keys_to_extract}
 			snapshot = extract_data_dict(snapshot)
 
@@ -141,3 +142,32 @@ def extract_data_dict(dict_):
 			extract_data_dict(val)
 
 	return dict_
+
+def extract_requirements(snapshot):
+	"""Extract system requirements from raw API response. Parse the three OS specific
+	requirements fields for 'key: value' style requirements into a single dict.
+	Args:
+		snapshot (dict): raw contents of an API app description response.
+	Return:
+		A dict of hardware category and value. Categories include components like
+		OS, Processor, Storage.
+	"""
+	system_requirement_headers = ("pc_requirements", "mac_requirements", "linux_requirements")
+
+	requirements_map = defaultdict(set)
+	# Read both minimum and recommended sections from all three OS headers into a single
+	# dictionary.
+	for header in system_requirement_headers:
+		for req_type in ("minimum", "recommended"):
+			soup = BeautifulSoup(snapshot[header][req_type], "html.parser")
+			for li in soup.select("li"):
+				if ":" in li.text:
+					category = li.text.split(":")[0]
+					value = li.text.split(":")[1].strip()
+					requirements_map[category].add(value)
+				else:
+					logging.warning("Couldn't parse %s as key: value". li.text)
+
+					continue
+
+	return requirements_map
