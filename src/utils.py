@@ -6,6 +6,7 @@ import os.path
 from google.cloud import storage
 
 
+logger = logging.getLogger("main")
 
 MODEL_BUCKET = os.environ["MODEL_BUCKET"]
 TEMP_BUCKET = os.environ["TEMP_BUCKET"]
@@ -37,7 +38,7 @@ def download_descriptions_as_text():
 		data_string = blob.download_as_bytes().decode("utf8")
 		results.append(json.loads(data_string)["detailed_description"])
 	
-	logging.info("Loaded %d descriptions from gs://%s/%s", count, TEMP_BUCKET, TEMP_BUCKET_PREFIX)
+	logger.info("Loaded %d descriptions from gs://%s/%s", count, TEMP_BUCKET, TEMP_BUCKET_PREFIX)
 
 	return " ".join(results)
 

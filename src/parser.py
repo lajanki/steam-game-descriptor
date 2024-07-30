@@ -30,6 +30,8 @@ from bs4 import BeautifulSoup
 from src import utils, json_set_encoder
 
 
+logger = logging.getLogger("main")
+
 URL = "https://store.steampowered.com/api/appdetails"
 
 
@@ -42,32 +44,32 @@ def upload_description_batch(batch_size=200):
 	sample = random.sample(app_id_list, batch_size)
 	TEMP_BUCKET_PREFIX = os.environ["TEMP_BUCKET_PREFIX"]
 
-	logging.info("Parsing %s descriptions", batch_size)
+	logger.info("Parsing %s descriptions", batch_size)
 	with requests.Session() as s:
 		s.params = {"cc": "us", "l": "english"}
 
 		success = 0
 		for app_id in sample:
-			logging.debug("Querying %s?appids=%s", URL, app_id)
+			logger.debug("Querying %s?appids=%s", URL, app_id)
 			r = s.get(URL, params={"appids": app_id})
 			r.raise_for_status()
 
 			if not r.json()[str(app_id)]["success"]:
-				logging.info("Unsuccesful request, appid: %s, skipping...", app_id)
+				logger.info("Unsuccesful request, appid: %s, skipping...", app_id)
 				continue
 
 			data = r.json()[str(app_id)]["data"]
 			description = data.get("detailed_description")
 			if not description:
-				logging.info("No description detected, appid: %s, skipping...", app_id)
+				logger.info("No description detected, appid: %s, skipping...", app_id)
 				continue
 
 			if data["type"].lower() not in ("game", "dlc", "demo", "advertising", "mod"):
-				logging.info("Excluding type: '%s', appid: %s", data["type"], app_id)
+				logger.info("Excluding type: '%s', appid: %s", data["type"], app_id)
 				continue
 
 			if "english" not in data.get("supported_languages", "english").lower():
-				logging.info("English not in supported languages, appid: %s, skipping...", app_id)
+				logger.info("English not in supported languages, appid: %s, skipping...", app_id)
 				continue
 
 			# extract selected keys from the response and convert html string descriptions
@@ -86,7 +88,7 @@ def upload_description_batch(batch_size=200):
 			)
 			success += 1
 
-	logging.info(
+	logger.info(
 		"Succesfully uploaded %s descriptions to %s/%s",
 		success,
 		utils.TEMP_BUCKET,
@@ -188,7 +190,7 @@ def extract_requirements(snapshot):
 					value = li.text.split(":")[1].strip()
 					requirements_map[category].add(value)
 				else:
-					logging.warning("Couldn't parse %s as key: value", li.text)
+					logger.warning("Couldn't parse %s as key: value", li.text)
 					continue
 
 	return requirements_map

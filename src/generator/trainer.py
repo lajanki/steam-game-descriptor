@@ -6,6 +6,8 @@ import pickle
 from src import utils
 
 
+logger = logging.getLogger("main")
+
 
 class Trainer():
 	"""Trainer creates ('trains') a Markov text chain model by splitting source text into ngrams
@@ -73,4 +75,4 @@ class Trainer():
 		median = statistics.median(degrees)
 		units = degrees.count(1) / len(degrees)
 
-		logging.info("Model statistics - median degree: %s, unit ngram rate: %.2f", median, units)
+		logger.info("Model statistics - median degree: %s, unit ngram rate: %.2f", median, units)
