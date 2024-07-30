@@ -1,11 +1,9 @@
-import argparse
-import logging
 from flask import (
+    abort,
     Flask,
-    render_template,
     jsonify,
+    render_template,
     request,
-    abort
 )
 
 from src import generate_description, parser
@@ -44,7 +42,6 @@ def train_model():
     # https://cloud.google.com/appengine/docs/standard/python3/scheduling-jobs-with-cron-yaml#validating_cron_requests
     if "X-Appengine-Cron" in request.headers:
         setup_gcs_models.setup()
-
         return "OK\n", 200
 
     abort(500, "Bad request")
@@ -59,13 +56,3 @@ def parse_descriptions():
 
     abort(500, "Bad request")
 	
-
-if __name__ == "__main__":
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument("--debug", action="store_true")
-    args = argparser.parse_args()
-
-    if args.debug:
-        logging.getLogger().setLevel("DEBUG")
-        
-    app.run(debug=args.debug)

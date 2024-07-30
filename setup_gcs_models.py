@@ -6,13 +6,9 @@
 # python setup_gcs_models.py --env prod
 
 
-
-import argparse
 import logging
 import os
 from importlib import reload
-
-import yaml
 
 from src import parser, utils
 from src.generator import trainer
@@ -50,19 +46,4 @@ def setup():
     
 
 if __name__ == "__main__":
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument("--env", nargs="?", help="environment for storing results")
-    args = argparser.parse_args()
-
-    if args.env == "prod":
-        logging.info("Using production bucket config!")
-
-        # Load production buckets from the app config
-        with open("app.yaml") as f:
-            data = yaml.safe_load(f)
-            os.environ.update(data["env_variables"])
-            
-        # Reload module to propagate bucket name changes to helper functions
-        reload(utils)
-
     setup()
