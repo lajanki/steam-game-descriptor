@@ -26,7 +26,11 @@ import string
 from collections import defaultdict
 
 from bs4 import BeautifulSoup
-from src import utils
+
+from src import utils, json_set_encoder
+
+
+URL = "https://store.steampowered.com/api/appdetails"
 
 
 def upload_description_batch(batch_size=200):
@@ -36,7 +40,6 @@ def upload_description_batch(batch_size=200):
 	"""
 	app_id_list = _get_app_id_list()
 	sample = random.sample(app_id_list, batch_size)
-	URL = "https://store.steampowered.com/api/appdetails"
 	TEMP_BUCKET_PREFIX = os.environ["TEMP_BUCKET_PREFIX"]
 
 	logging.info("Parsing %s descriptions", batch_size)
@@ -45,6 +48,7 @@ def upload_description_batch(batch_size=200):
 
 		success = 0
 		for app_id in sample:
+			logging.debug("Querying %s?appids=%s", URL, app_id)
 			r = s.get(URL, params={"appids": app_id})
 			r.raise_for_status()
 
@@ -69,13 +73,13 @@ def upload_description_batch(batch_size=200):
 			# extract selected keys from the response and convert html string descriptions
 			# to plain strings. 
 			keys_to_extract = ["detailed_description", "pc_requirements", "mac_requirements", "linux_requirements"]
-			snapshot = {k:v for k,v in data.items() if k in keys_to_extract}
-			snapshot = extract_data_dict(snapshot)
+			#snapshot = {k:v for k,v in data.items() if k in keys_to_extract}
+			snapshot = format_data_dict(data)
 
 			name = data["name"].replace("/", "-") # Replace / to avoid issues with Cloud Storage prefixes
 			path = f"{TEMP_BUCKET_PREFIX}/{name}.json"
 			utils.upload_to_gcs(
-				json.dumps(snapshot),
+				json.dumps(snapshot, cls=json_set_encoder.SetEncoder),
 				utils.TEMP_BUCKET,
 				path,
 				content_type="application/json",
@@ -113,7 +117,7 @@ def get_app_names():
 	return " ".join(names)
 
 def _html_string_to_text(html_string):
-	"""Convert a html game description to a regular text description."""
+	"""Convert a html description to a regular text description."""
 	soup = BeautifulSoup(html_string, "html.parser")
 
 	# Extract text as a single string.
@@ -143,6 +147,18 @@ def extract_data_dict(dict_):
 
 	return dict_
 
+def format_data_dict(snapshot):
+	"""Format a dictionary containing items needed for training data. Gather various keys
+	from the source API response.
+	"""
+	return {
+		"detailed_description": _html_string_to_text(snapshot["detailed_description"]),
+		"requirements": extract_requirements(snapshot),
+		"metadata": {
+			"source": f"{URL}?appids={snapshot['steam_appid']}"
+		}
+	}
+
 def extract_requirements(snapshot):
 	"""Extract system requirements from raw API response. Parse the three OS specific
 	requirements fields for 'key: value' style requirements into a single dict.
@@ -159,15 +175,20 @@ def extract_requirements(snapshot):
 	# dictionary.
 	for header in system_requirement_headers:
 		for req_type in ("minimum", "recommended"):
-			soup = BeautifulSoup(snapshot[header][req_type], "html.parser")
+
+			# The data type of the top level OS header is either a list if there's no data
+			# for this OS, or an object when it's not empty
+			if snapshot[header] == []:
+				continue
+
+			soup = BeautifulSoup(snapshot[header].get(req_type, ""), "html.parser")
 			for li in soup.select("li"):
 				if ":" in li.text:
 					category = li.text.split(":")[0]
 					value = li.text.split(":")[1].strip()
 					requirements_map[category].add(value)
 				else:
-					logging.warning("Couldn't parse %s as key: value". li.text)
-
+					logging.warning("Couldn't parse %s as key: value", li.text)
 					continue
 
 	return requirements_map
