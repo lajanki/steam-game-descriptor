@@ -43,7 +43,7 @@ def setup():
     requirements_map = utils.download_requirements()
     for key in requirements_map:
         logger.info(" # %s:", key)
-        t = trainer.Trainer(" ".join(requirements_map[key]), f"model_requirements_{key.replace(" ", "_")}.pkl")
+        t = trainer.Trainer(" ".join(requirements_map[key]), f"model_requirements_{key.replace(' ', '_')}.pkl")
         t.run()
 
     logger.info("Models saved in gs://%s", utils.MODEL_BUCKET)
