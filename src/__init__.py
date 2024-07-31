@@ -2,6 +2,7 @@ import logging
 from dotenv import load_dotenv
 
 
+# configure a logger
 logger = logging.getLogger("main")
 logger.setLevel(logging.INFO)
 
