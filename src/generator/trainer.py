@@ -2,6 +2,7 @@ import collections
 import statistics
 import logging
 import pickle
+import sys
 
 from src import utils
 
@@ -66,7 +67,11 @@ class Trainer():
 			yield train_data[i: i + self.n]
 
 	def compute_statistics(self):
-		"""Compute average number of successors per key in the cache data."""
+		"""Compute statistics for a trained model:
+		 * the median degree: the median number of successors for keys
+		 * unit ngram rate: the % of keys having degree 1
+		 * size in megabytes
+		"""
 		degrees = []
 		for key in self.model_data:
 			d = len(self.model_data[key])
@@ -74,5 +79,6 @@ class Trainer():
 
 		median = statistics.median(degrees)
 		units = degrees.count(1) / len(degrees)
+		mb_size = sys.getsizeof(self.model_data) / 10**6
 
-		logger.info("Model statistics - median degree: %s, unit ngram rate: %.2f", median, units)
+		logger.info("Model statistics: median degree: %s, unit ngram rate: %.2f, size: %.2fMB", median, units, mb_size)
