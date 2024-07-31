@@ -36,7 +36,7 @@ class Trainer():
 		self.compute_statistics()
 
 		model = pickle.dumps(self.model_data)
-		utils.upload_to_gcs(model, utils.MODEL_BUCKET, self.filename)
+		utils.upload_to_gcs(model, utils.MODEL_BUCKET, "models/" + self.filename)
 
 	def train(self):
 		"""Train the model given input text. Splits the text into ngrams and store as a dict of (n-1)-gram keys

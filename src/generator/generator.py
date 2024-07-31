@@ -17,7 +17,7 @@ class Generator:
 		self._key = random.choice(list(self.model))
 
 	def _load_model(self, name):
-		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, name)
+		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, "models/" + name)
 		return pickle.loads(model_data)
 
 	def generate(self, seed=None, size=25, complete_sentence=False, continue_until_valid=False):

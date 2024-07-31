@@ -21,22 +21,22 @@ def setup():
     """
     logger.info("Creating description model...")
     description_text = utils.download_descriptions_as_text()
-    t = trainer.Trainer(description_text, "model.pkl")
+    t = trainer.Trainer(description_text, "description.pkl")
     t.run()
 
     logger.info("Creating title model...")
     names_text = parser.get_app_names()
-    t = trainer.Trainer(names_text, "model_titles.pkl", 2)
+    t = trainer.Trainer(names_text, "title.pkl", 2)
     t.run()
 
     logger.info("Creating feature model...")
     feature_text = utils.get_text_file("data/features.txt")
-    t = trainer.Trainer(feature_text, "model_features.pkl")
+    t = trainer.Trainer(feature_text, "feature.pkl")
     t.run()
 
     logger.info("Creating tagline model...")
     taglines_text = utils.get_text_file("data/taglines.txt")
-    t = trainer.Trainer(taglines_text, "model_taglines.pkl")
+    t = trainer.Trainer(taglines_text, "tagline.pkl")
     t.run()
 
     logger.info("Creating system requirement models:")
@@ -44,7 +44,7 @@ def setup():
     for key in requirements_map:
         logger.info(" # %s:", key)
         text_data = " ".join(requirements_map[key])
-        t = trainer.Trainer(text_data, f"model_requirements_{key.replace(' ', '_')}.pkl")
+        t = trainer.Trainer(text_data, f"requirements_{key.replace(' ', '_')}.pkl")
         t.run()
 
     logger.info("Models saved in gs://%s", utils.MODEL_BUCKET)

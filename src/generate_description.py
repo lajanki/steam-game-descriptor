@@ -29,10 +29,10 @@ class DescriptionGenerator():
 
 	def __init__(self):
 		"""Load pre-trained generators for description and title."""
-		self.markov_generator = generator.Generator("model.pkl")
-		self.title_generator = generator.Generator("model_titles.pkl")
-		self.feature_generator = generator.Generator("model_features.pkl")
-		self.taglines_generator = generator.Generator("model_taglines.pkl")
+		self.description_generator = generator.Generator("description.pkl")
+		self.title_generator = generator.Generator("title.pkl")
+		self.feature_generator = generator.Generator("feature.pkl")
+		self.taglines_generator = generator.Generator("tagline.pkl")
 
 
 	def __call__(self):
@@ -62,7 +62,7 @@ class DescriptionGenerator():
 		for _ in range(self.config["paragraphs"]):
 			size = int(abs(random.gauss(15, 3.0)))
 			seed = random.choice(seeds["text"])
-			paragraph = self.markov_generator.generate(seed=seed, size=size, complete_sentence=True)
+			paragraph = self.description_generator.generate(seed=seed, size=size, complete_sentence=True)
 			main_sections.append(paragraph)
 			seed = None
 
@@ -73,13 +73,13 @@ class DescriptionGenerator():
 		sub_sections = []
 		for _ in range(self.config["subsections"]):
 			seed = random.choice(seeds["headers"])
-			header = self.markov_generator.generate(seed=seed, size=3, continue_until_valid=True)
+			header = self.description_generator.generate(seed=seed, size=3, continue_until_valid=True)
 			header = string.capwords(header.rstrip("."))
 			sub_sections.append(f"#### {header}")
 
-			self.markov_generator.ff_to_next_sentence()
+			self.description_generator.ff_to_next_sentence()
 			size = int(abs(random.gauss(15, 3.0)))
-			paragraph = self.markov_generator.generate(size=size, complete_sentence=True)
+			paragraph = self.description_generator.generate(size=size, complete_sentence=True)
 			sub_sections.append(paragraph)
 
 		sections_text = "\n".join(sub_sections)
