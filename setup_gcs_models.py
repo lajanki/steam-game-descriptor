@@ -1,18 +1,12 @@
 # Contains a setup function for creating new models and saving them to the remote bucket.
-# Useful for manually adding any new models as the Flask app expects all models to be present
+# Useful for manually adding any new models as the Flask application expects all models to be present
 # at all times.
 #
 # To update production buckets run with
-# python setup_gcs_models.py --env prod
+# dotenv -f .env.prod run python setup_gcs_models.py 
 
 
-
-import argparse
 import logging
-import os
-from importlib import reload
-
-import yaml
 
 from src import parser, utils
 from src.generator import trainer
@@ -56,19 +50,4 @@ def setup():
     
 
 if __name__ == "__main__":
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument("--env", nargs="?", help="environment for storing results")
-    args = argparser.parse_args()
-
-    if args.env == "prod":
-        logger.info("Using production bucket config!")
-
-        # Load production buckets from the app config
-        with open("app.yaml") as f:
-            data = yaml.safe_load(f)
-            os.environ.update(data["env_variables"])
-            
-        # Reload module to propagate bucket name changes to helper functions
-        reload(utils)
-
     setup()

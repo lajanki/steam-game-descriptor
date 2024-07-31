@@ -16,4 +16,5 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 
+# Load default environment variables. Will not override existing variables.
 load_dotenv(".env.dev")
