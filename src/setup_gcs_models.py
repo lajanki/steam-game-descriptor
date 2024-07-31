@@ -3,7 +3,7 @@
 # at all times.
 #
 # To update production buckets run with
-# dotenv -f .env.prod run python setup_gcs_models.py 
+# dotenv -f .env.prod run python -m src.setup_gcs_models.py 
 
 
 import logging
@@ -43,7 +43,8 @@ def setup():
     requirements_map = utils.download_requirements()
     for key in requirements_map:
         logger.info(" # %s:", key)
-        t = trainer.Trainer(" ".join(requirements_map[key]), f"model_requirements_{key.replace(" ", "_")}.pkl")
+        text_data = " ".join(requirements_map[key])
+        t = trainer.Trainer(text_data, f"model_requirements_{key.replace(' ', '_')}.pkl")
         t.run()
 
     logger.info("Models saved in gs://%s", utils.MODEL_BUCKET)

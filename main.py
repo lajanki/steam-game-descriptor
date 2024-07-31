@@ -5,8 +5,7 @@ from flask import (
     render_template,
     request,
 )
-from src import generate_description, parser
-import setup_gcs_models
+from src import generate_description, parser, setup_gcs_models
 
 
 
