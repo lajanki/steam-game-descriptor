@@ -186,7 +186,7 @@ def extract_requirements(snapshot):
 			soup = BeautifulSoup(snapshot[header].get(req_type, ""), "html.parser")
 			for li in soup.select("li"):
 				if ":" in li.text:
-					category = li.text.split(":")[0]
+					category = li.text.split(":")[0].rstrip(" *")
 					value = li.text.split(":")[1].strip()
 					requirements_map[category].add(value)
 				else:
