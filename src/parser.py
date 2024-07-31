@@ -23,9 +23,16 @@ import os
 import random
 import requests
 import string
+from collections import defaultdict
 
 from bs4 import BeautifulSoup
-from src import utils
+
+from src import utils, json_set_encoder
+
+
+logger = logging.getLogger("main")
+
+URL = "https://store.steampowered.com/api/appdetails"
 
 
 def upload_description_batch(batch_size=200):
@@ -35,53 +42,51 @@ def upload_description_batch(batch_size=200):
 	"""
 	app_id_list = _get_app_id_list()
 	sample = random.sample(app_id_list, batch_size)
-	URL = "https://store.steampowered.com/api/appdetails"
 	TEMP_BUCKET_PREFIX = os.environ["TEMP_BUCKET_PREFIX"]
 
-	logging.info("Parsing %s descriptions", batch_size)
+	logger.info("Parsing %s descriptions", batch_size)
 	with requests.Session() as s:
 		s.params = {"cc": "us", "l": "english"}
 
 		success = 0
 		for app_id in sample:
+			logger.debug("Querying %s?appids=%s", URL, app_id)
 			r = s.get(URL, params={"appids": app_id})
 			r.raise_for_status()
 
 			if not r.json()[str(app_id)]["success"]:
-				logging.info("Unsuccesful request, appid: %s, skipping...", app_id)
+				logger.info("Unsuccesful request, appid: %s, skipping...", app_id)
 				continue
 
 			data = r.json()[str(app_id)]["data"]
 			description = data.get("detailed_description")
 			if not description:
-				logging.info("No description detected, appid: %s, skipping...", app_id)
+				logger.info("No description detected, appid: %s, skipping...", app_id)
 				continue
 
 			if data["type"].lower() not in ("game", "dlc", "demo", "advertising", "mod"):
-				logging.info("Excluding type: '%s', appid: %s", data["type"], app_id)
+				logger.info("Excluding type: '%s', appid: %s", data["type"], app_id)
 				continue
 
 			if "english" not in data.get("supported_languages", "english").lower():
-				logging.info("English not in supported languages, appid: %s, skipping...", app_id)
+				logger.info("English not in supported languages, appid: %s, skipping...", app_id)
 				continue
 
 			# extract selected keys from the response and convert html string descriptions
 			# to plain strings. 
-			keys_to_extract = ["detailed_description", "pc_requirements"]
-			snapshot = {k:v for k,v in data.items() if k in keys_to_extract}
-			snapshot = extract_data_dict(snapshot)
+			snapshot = format_data_dict(data)
 
 			name = data["name"].replace("/", "-") # Replace / to avoid issues with Cloud Storage prefixes
 			path = f"{TEMP_BUCKET_PREFIX}/{name}.json"
 			utils.upload_to_gcs(
-				json.dumps(snapshot),
+				json.dumps(snapshot, cls=json_set_encoder.SetEncoder),
 				utils.TEMP_BUCKET,
 				path,
 				content_type="application/json",
 			)
 			success += 1
 
-	logging.info(
+	logger.info(
 		"Succesfully uploaded %s descriptions to %s/%s",
 		success,
 		utils.TEMP_BUCKET,
@@ -112,7 +117,7 @@ def get_app_names():
 	return " ".join(names)
 
 def _html_string_to_text(html_string):
-	"""Convert a html game description to a regular text description."""
+	"""Convert a html description to a regular text description."""
 	soup = BeautifulSoup(html_string, "html.parser")
 
 	# Extract text as a single string.
@@ -130,14 +135,48 @@ def _html_string_to_text(html_string):
 	filtered = [word for word in words if not any(item in word.lower() for item in blacklist)]
 	return " ".join(filtered)
 
-def extract_data_dict(dict_):
-	"""Utility function: recursively convert html strings to regular string from 
-	a dictionary of raw descriptions.
+def format_data_dict(snapshot):
+	"""Format a dictionary containing items needed for training data. Gather various keys
+	from the source API response.
 	"""
-	for key, val in dict_.items():
-		if type(val) == str:
-			dict_[key] = _html_string_to_text(val)
-		elif type(val) == dict:
-			extract_data_dict(val)
+	return {
+		"detailed_description": _html_string_to_text(snapshot["detailed_description"]),
+		"requirements": extract_requirements(snapshot),
+		"metadata": {
+			"source": f"{URL}?appids={snapshot['steam_appid']}"
+		}
+	}
 
-	return dict_
+def extract_requirements(snapshot):
+	"""Extract system requirements from raw API response. Parse the three OS specific
+	requirements fields for 'key: value' style requirements into a single dict.
+	Args:
+		snapshot (dict): raw contents of an API app description response.
+	Return:
+		A dict of hardware category and value. Categories include components like
+		OS, Processor, Storage.
+	"""
+	system_requirement_headers = ("pc_requirements", "mac_requirements", "linux_requirements")
+
+	requirements_map = defaultdict(set)
+	# Read both minimum and recommended sections from all three OS headers into a single
+	# dictionary.
+	for header in system_requirement_headers:
+		for req_type in ("minimum", "recommended"):
+
+			# The data type of the top level OS header is either a list if there's no data
+			# for this OS, or an object when it's not empty
+			if snapshot[header] == []:
+				continue
+
+			soup = BeautifulSoup(snapshot[header].get(req_type, ""), "html.parser")
+			for li in soup.select("li"):
+				if ":" in li.text:
+					category = li.text.split(":")[0].rstrip(" *")
+					value = li.text.split(":")[1].strip()
+					requirements_map[category].add(value)
+				else:
+					logger.warning("Couldn't parse %s as key: value", li.text)
+					continue
+
+	return requirements_map
