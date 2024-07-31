@@ -74,8 +74,6 @@ def upload_description_batch(batch_size=200):
 
 			# extract selected keys from the response and convert html string descriptions
 			# to plain strings. 
-			keys_to_extract = ["detailed_description", "pc_requirements", "mac_requirements", "linux_requirements"]
-			#snapshot = {k:v for k,v in data.items() if k in keys_to_extract}
 			snapshot = format_data_dict(data)
 
 			name = data["name"].replace("/", "-") # Replace / to avoid issues with Cloud Storage prefixes
@@ -136,18 +134,6 @@ def _html_string_to_text(html_string):
 	blacklist = ("http://", "https://", "www", "@", "/img", "/list", ".com", "features")
 	filtered = [word for word in words if not any(item in word.lower() for item in blacklist)]
 	return " ".join(filtered)
-
-def extract_data_dict(dict_):
-	"""Utility function: recursively convert html strings to regular string from 
-	a dictionary of raw descriptions.
-	"""
-	for key, val in dict_.items():
-		if type(val) == str:
-			dict_[key] = _html_string_to_text(val)
-		elif type(val) == dict:
-			extract_data_dict(val)
-
-	return dict_
 
 def format_data_dict(snapshot):
 	"""Format a dictionary containing items needed for training data. Gather various keys
