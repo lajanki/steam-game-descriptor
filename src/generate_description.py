@@ -42,6 +42,7 @@ class DescriptionGenerator():
 				memory = generator.Generator("requirements_Memory.pkl"),
 				graphics = generator.Generator("requirements_Graphics.pkl"),
 				storage = generator.Generator("requirements_Storage.pkl"),
+				sound_card = generator.Generator("requirements_Sound_Card.pkl"),
 				additional_notes = generator.Generator("requirements_Additional_Notes.pkl")
 			)
 		)
@@ -57,7 +58,7 @@ class DescriptionGenerator():
 
 		main_sections = []
 
-		# title 
+		# title
 		size = random.randint(1,4)
 		title = self.generators.title.generate(size=size, continue_until_valid=True)
 
@@ -115,39 +116,70 @@ class DescriptionGenerator():
 		# system requirements
 		size = min(random.gauss(9, 4), 20)
 		system_requirements = {
-			"OS": self.generators.system_requirements.os.generate(size=abs(random.gauss(4, 2))),
-			"processor": self.generators.system_requirements.processor.generate(size=abs(random.gauss(9, 4))),
-			"memory": self.generators.system_requirements.memory.generate(size=min(random.gauss(5, 4), 10)),
-			"graphics": self.generators.system_requirements.graphics.generate(size=size),
-			"storage": self.generators.system_requirements.storage.generate(size=abs(random.gauss(4, 2))),
-			"additional_notes": self.generators.system_requirements.additional_notes.generate(size=size),
+			"OS": self.generators.system_requirements.os.generate(
+				size=abs(random.gauss(4, 2))
+			),
+			"Processor": self.generators.system_requirements.processor.generate(
+				size=abs(random.gauss(9, 4))
+			),
+			"Memory": self.generators.system_requirements.memory.generate(
+				size=min(random.gauss(5, 4), 10)
+			),
+			"Graphics": self.generators.system_requirements.graphics.generate(
+				size=size
+			),
+			"Storage": self.generators.system_requirements.storage.generate(
+				size=abs(random.gauss(4, 2))
+			)
 		}
+		# add sound card and additional notes if eanbled in the config
+		if self.config["additional_system_requirements"]["sound_card"]:
+			system_requirements["Sound Card"] = (
+				self.generators.system_requirements.sound_card.generate(
+					size=abs(random.gauss(4, 2))
+				)
+			)
+			
+		if self.config["additional_system_requirements"]["additional_notes"]:
+			system_requirements["Additional Notes"] = (
+				self.generators.system_requirements.additional_notes.generate(
+					size=size
+				)
+			)
+			
 
 		return {
 			"description": description_html,
 			"subsections": sections_html,
 			"features": features_html,
 			"tagline": tagline,
-			"tags":	generate_tags(),
+			"tags": generate_tags(),
 			"developer": generate_developer(),
-			"system_requirements": system_requirements
+			"system_requirements": system_requirements,
 		}
 
 def create_config():
-	"""Create a randomized config for number of paragraphs and
-	types of content to display.
-	Content can either be either:
+	"""Create a randomized config for which sections and how many to include
+	in the description.
+
+	Main content can include either:
 		* main paragraph(s) and a number of subsections with headers, or
 		* main paragraph(s) and a list of features
+	
+	Optional system requirements include a sound card and additional notes.
 	"""
-	# randomly create either features or subsections
+	# randomly determine whether to add a list of features or subsections
 	num_of_features = random.randint(2,5) if random.randint(0,1) else 0
 	num_of_subsections = random.randint(1,2) if num_of_features == 0 else 0
 	return {
 		"paragraphs": random.randint(1,2),
 		"features": num_of_features,
 		"subsections": num_of_subsections,
-		"tagline": random.randint(0,1)
+		"tagline": random.randint(0,1),
+		"additional_system_requirements": {
+			"sound_card": random.random() > 0.75,
+			"additional_notes": random.random() > 0.75
+		}
 	}
 
 def generate_tags():

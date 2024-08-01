@@ -58,6 +58,7 @@ def download_requirements():
 		"Graphics",
 		"DirectX",
 		"Storage",
+		"Sound Card",
 		"Additional Notes"
 	)
 	results = {k: set() for k in CATEGORIES_TO_EXTRACT}
