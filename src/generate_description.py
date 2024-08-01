@@ -5,6 +5,7 @@ import random
 import re
 import json
 import string
+from types import SimpleNamespace
 
 import markdown
 
@@ -29,11 +30,21 @@ class DescriptionGenerator():
 
 	def __init__(self):
 		"""Load pre-trained generators for description and title."""
-		self.description_generator = generator.Generator("description.pkl")
-		self.title_generator = generator.Generator("title.pkl")
-		self.feature_generator = generator.Generator("feature.pkl")
-		self.taglines_generator = generator.Generator("tagline.pkl")
+		self.generators = SimpleNamespace(
+			description = generator.Generator("description.pkl"),
+			title = generator.Generator("title.pkl"),
+			feature = generator.Generator("feature.pkl"),
+			tagline = generator.Generator("tagline.pkl"),
 
+			system_requirements = SimpleNamespace(
+				os = generator.Generator("requirements_OS.pkl"),
+				processor = generator.Generator("requirements_Processor.pkl"),
+				memory = generator.Generator("requirements_Memory.pkl"),
+				graphics = generator.Generator("requirements_Graphics.pkl"),
+				storage = generator.Generator("requirements_Storage.pkl"),
+				additional_notes = generator.Generator("requirements_Additional_Notes.pkl")
+			)
+		)
 
 	def __call__(self):
 		"""Generate a description with random number of paragraphs and content types."""
@@ -48,7 +59,8 @@ class DescriptionGenerator():
 
 		# title 
 		size = random.randint(1,4)
-		title = self.title_generator.generate(size=size, continue_until_valid=True)
+		title = self.generators.title.generate(size=size, continue_until_valid=True)
+
 		title = string.capwords(title.rstrip(".")) # use string.capwords to avoid issues with apostrophes
 		title = title.replace(".", ":")
 		main_sections.append(f"## {title}")
@@ -56,13 +68,13 @@ class DescriptionGenerator():
 		# tagline
 		tagline = ""
 		if self.config["tagline"]:
-			tagline = self.taglines_generator.generate(size=4, complete_sentence=True)
+			tagline = self.generators.tagline.generate(size=4, complete_sentence=True)
 
 		# main description
 		for _ in range(self.config["paragraphs"]):
 			size = int(abs(random.gauss(15, 3.0)))
 			seed = random.choice(seeds["text"])
-			paragraph = self.description_generator.generate(seed=seed, size=size, complete_sentence=True)
+			paragraph = self.generators.description.generate(seed=seed, size=size, complete_sentence=True)
 			main_sections.append(paragraph)
 			seed = None
 
@@ -73,13 +85,13 @@ class DescriptionGenerator():
 		sub_sections = []
 		for _ in range(self.config["subsections"]):
 			seed = random.choice(seeds["headers"])
-			header = self.description_generator.generate(seed=seed, size=3, continue_until_valid=True)
+			header = self.generators.description.generate(seed=seed, size=3, continue_until_valid=True)
 			header = string.capwords(header.rstrip("."))
 			sub_sections.append(f"#### {header}")
 
-			self.description_generator.ff_to_next_sentence()
+			self.generators.description.ff_to_next_sentence()
 			size = int(abs(random.gauss(15, 3.0)))
-			paragraph = self.description_generator.generate(size=size, complete_sentence=True)
+			paragraph = self.generators.description.generate(size=size, complete_sentence=True)
 			sub_sections.append(paragraph)
 
 		sections_text = "\n".join(sub_sections)
@@ -89,7 +101,7 @@ class DescriptionGenerator():
 		feature_list = []
 		for _ in range(self.config["features"]):
 			size = min(random.gauss(12, 4), 22) # features should be short
-			feature = f" * {self.feature_generator.generate(size=size, complete_sentence=True)}"
+			feature = f" * {self.generators.feature.generate(size=size, complete_sentence=True)}"
 			feature_list.append(feature)
 
 		if feature_list:
@@ -100,15 +112,26 @@ class DescriptionGenerator():
 
 		features_html = markdown.markdown(features)
 
+		# system requirements
+		size = min(random.gauss(9, 4), 20)
+		system_requirements = {
+			"OS": self.generators.system_requirements.os.generate(size=abs(random.gauss(4, 2))),
+			"processor": self.generators.system_requirements.processor.generate(size=abs(random.gauss(9, 4))),
+			"memory": self.generators.system_requirements.memory.generate(size=min(random.gauss(5, 4), 10)),
+			"graphics": self.generators.system_requirements.graphics.generate(size=size),
+			"storage": self.generators.system_requirements.storage.generate(size=abs(random.gauss(4, 2))),
+			"additional_notes": self.generators.system_requirements.additional_notes.generate(size=size),
+		}
+
 		return {
 			"description": description_html,
 			"subsections": sections_html,
 			"features": features_html,
 			"tagline": tagline,
 			"tags":	generate_tags(),
-			"developer": generate_developer()
+			"developer": generate_developer(),
+			"system_requirements": system_requirements
 		}
-
 
 def create_config():
 	"""Create a randomized config for number of paragraphs and
