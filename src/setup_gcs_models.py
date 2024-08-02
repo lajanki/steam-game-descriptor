@@ -19,8 +19,12 @@ def setup():
     """Train new generator models and store in Cloud Storage bucket.
     Existing models will be overwritten.
     """
+    logger.info("Downloading source files... ")
+    source_data_list = utils.download_all_source_files()
+
     logger.info("Creating description model...")
-    description_text = utils.download_descriptions_as_text()
+    description_text = " ".join([item["detailed_description"] for item in source_data_list])
+
     t = trainer.Trainer(description_text, "description.pkl")
     t.run()
 
@@ -39,16 +43,17 @@ def setup():
     t = trainer.Trainer(taglines_text, "tagline.pkl")
     t.run()
 
+    # Train a dedicated model for each system requirement category
     logger.info("Creating system requirement models:")
-    requirements_map = utils.download_requirements()
-    for key in requirements_map:
+    extracted_requirement_map = utils.merge_requirements(source_data_list)
+    for key in extracted_requirement_map:
         logger.info(" # %s:", key)
-        text_data = " ".join(requirements_map[key])
+        text_data = " ".join(extracted_requirement_map[key])
         t = trainer.Trainer(text_data, f"requirements_{key.replace(' ', '_')}.pkl")
         t.run()
 
     logger.info("Models saved in gs://%s", utils.MODEL_BUCKET)
-    
+
 
 if __name__ == "__main__":
     setup()
