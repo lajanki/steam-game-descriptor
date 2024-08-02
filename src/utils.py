@@ -87,7 +87,7 @@ def merge_requirements(source_data_list):
                 extracted_requirement_map[key].extend(value)
 
     # Merge keys denoting the same category
-    extracted_requirement_map["Storage"].extend(extracted_requirement_map.pop("Hard Drive"))
-    extracted_requirement_map["Storage"].extend(extracted_requirement_map.pop("Hard Disk Space"))
-    extracted_requirement_map["Additional Notes"].extend(extracted_requirement_map.pop("Additional"))
+    extracted_requirement_map["Storage"].extend(extracted_requirement_map.pop("Hard Drive", []))
+    extracted_requirement_map["Storage"].extend(extracted_requirement_map.pop("Hard Disk Space", []))
+    extracted_requirement_map["Additional Notes"].extend(extracted_requirement_map.pop("Additional", []))
     return extracted_requirement_map
