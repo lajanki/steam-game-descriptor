@@ -12,8 +12,12 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<!-- jQuery, Popper and Bootstrap -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+			integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+			crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+			integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+			crossorigin="anonymous"></script>
 
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 
@@ -46,8 +50,10 @@
 						$("#tagline").text("");
 						$("#sub_sections").text("");
 						$("#features").text("");
-						$("#developer").text("");
+						$("#developer > span").text("");
 						$("#tags").text("");
+						$("#system_requirements").text("");
+						
 					},
 					dataType: "json",
 					url: $SCRIPT_ROOT + "/_generate",
@@ -60,7 +66,7 @@
 						$("#features").html(data.features);
 
 						var developer = "Developer: " + data.developer
-						$("#developer").text(developer);
+						$("#developer > span").text(developer);
 
 						// create <span> html string for every tag in the response and set as
 						// the #tags element
@@ -71,13 +77,17 @@
 						}	
 						$("#tags").html(html);
 
+						// Add system requirements as a list
+						for (let category of data.system_requirements) {
+							$("#system_requirements").append(`<li><b>${category["name"]}</b>: ${category["value"]}</li>`);
+						}
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
 						$("#description").html("<h1>Something went wrong, try again</h1>");
 						$("#tagline").text("");
 						$("#sub_sections").text("");
 						$("#features").text("");
-						$("#developer").text("");
+						$("#developer > span").text("");
 						$("#tags").text("");
 						$("#loader").hide();
 					}
@@ -109,8 +119,14 @@
 						<div id="tagline"></div>
 						<div id="sub_sections"></div>
 						<div id="features"></div>
-						<div id="developer"></div>
+						<div id="developer">
+							<span>Developer: </span>
+						</div>
 						<div id="tags"></div>
+						<div id="system_requirements_container">
+							<h3>System Requirements</h3>
+							<ul id="system_requirements"></ul>
+						</div>
 
 						<!-- A spinning loader to be displayed while new description is being loaded -->
 						<div class="text-center" id="loader">
@@ -128,7 +144,8 @@
 
 
 				<hr />
-				<img src="static/img/GitHub-Mark-32px.png" height="24" width="24"><a id="ghlink" href="https://github.com/lajanki/steam-game-descriptor"> steam-game-descriptor</a>
+				<img src="static/img/GitHub-Mark-32px.png" height="24" width="24"><a id="ghlink"
+					href="https://github.com/lajanki/steam-game-descriptor"> steam-game-descriptor</a>
 			</div>
 
 			<!-- right margin -->

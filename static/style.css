@@ -101,9 +101,22 @@ body {
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#263d56', endColorstr='#7db9e8',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
 }
 
+#developer {
+	margin-left: 0.7em;
+	margin-bottom: 1em;
+}
+
+#developer > span {
+	background-color: #4e6c89;
+	border-radius: 3px;
+	padding: 3px;
+	font-size: 14px;
+	line-height: 18px;
+}
+
 .game-tag {
 	background-color: #274d71;
-	margin-left: 20px;
+	margin-left: 0.7em;
 	color: #67c1f5;
 	border-radius: 3px;
 	line-height: 18px;
@@ -129,8 +142,24 @@ body {
 
 #description_divider {
 	height: 1px;
-    background: #5c5c5c;
+    background: #000000;
     border: none;
     margin-bottom: 5px;
 }
+
+div#system_requirements_container {
+	margin-top: 2em;
+	font-size: 12px;
+}
+
+#system_requirements_container > h3 {
+	border-bottom: 1px solid #000000;
+}
+
+ul#system_requirements {
+	list-style-type: none;
+	margin-left: 1.5em;
+	margin-right: 1.5em;
+	padding: 0;
+  }
 
