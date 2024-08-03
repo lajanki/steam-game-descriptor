@@ -73,7 +73,7 @@ class DescriptionGenerator():
 
 		# main description
 		for _ in range(self.config["paragraphs"]):
-			size = int(abs(random.gauss(15, 3.0)))
+			size = int(abs(random.gauss(15, 3)))
 			seed = random.choice(seeds["text"])
 			paragraph = self.generators.description.generate(seed=seed, size=size, complete_sentence=True)
 			main_sections.append(paragraph)
@@ -91,7 +91,7 @@ class DescriptionGenerator():
 			sub_sections.append(f"#### {header}")
 
 			self.generators.description.ff_to_next_sentence()
-			size = int(abs(random.gauss(15, 3.0)))
+			size = int(abs(random.gauss(15, 3)))
 			paragraph = self.generators.description.generate(size=size, complete_sentence=True)
 			sub_sections.append(paragraph)
 
@@ -101,7 +101,11 @@ class DescriptionGenerator():
 		# list of features
 		feature_list = []
 		for _ in range(self.config["features"]):
-			size = min(random.gauss(12, 4), 22) # features should be short
+			# set a shorthish upper bound
+			size = min(
+				int(abs(random.gauss(12, 4))),
+				22
+			)
 			feature = f" * {self.generators.feature.generate(size=size, complete_sentence=True)}"
 			feature_list.append(feature)
 
@@ -114,7 +118,6 @@ class DescriptionGenerator():
 		features_html = markdown.markdown(features)
 
 		# system requirements
-		size = min(random.gauss(9, 4), 20)
 		system_requirements = {
 			"OS": self.generators.system_requirements.os.generate(
 				size=abs(random.gauss(4, 2))
@@ -123,10 +126,10 @@ class DescriptionGenerator():
 				size=abs(random.gauss(9, 4))
 			),
 			"Memory": self.generators.system_requirements.memory.generate(
-				size=min(random.gauss(5, 4), 10)
+				size=min(abs(random.gauss(5, 4)), 10)
 			),
 			"Graphics": self.generators.system_requirements.graphics.generate(
-				size=size
+				size=min(abs(random.gauss(9, 4)), 20)
 			),
 			"Storage": self.generators.system_requirements.storage.generate(
 				size=abs(random.gauss(4, 2))
@@ -143,7 +146,7 @@ class DescriptionGenerator():
 		if self.config["additional_system_requirements"]["additional_notes"]:
 			system_requirements["Additional Notes"] = (
 				self.generators.system_requirements.additional_notes.generate(
-					size=size
+					size=abs(random.gauss(9, 4))
 				)
 			)
 			
@@ -176,7 +179,7 @@ def create_config():
 		"features": num_of_features,
 		"subsections": num_of_subsections,
 		"tagline": random.randint(0,1),
-		"additional_system_requirements": {
+		"additional_system_requirements": {	
 			"sound_card": random.random() > 0.75,
 			"additional_notes": random.random() > 0.75
 		}
