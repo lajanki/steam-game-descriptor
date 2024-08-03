@@ -117,39 +117,61 @@ class DescriptionGenerator():
 
 		features_html = markdown.markdown(features)
 
-		# system requirements
-		system_requirements = {
-			"OS": self.generators.system_requirements.os.generate(
-				size=abs(random.gauss(4, 2))
-			),
-			"Processor": self.generators.system_requirements.processor.generate(
-				size=abs(random.gauss(9, 4))
-			),
-			"Memory": self.generators.system_requirements.memory.generate(
-				size=min(abs(random.gauss(5, 4)), 10)
-			),
-			"Graphics": self.generators.system_requirements.graphics.generate(
-				size=min(abs(random.gauss(9, 4)), 20)
-			),
-			"Storage": self.generators.system_requirements.storage.generate(
-				size=abs(random.gauss(4, 2))
-			)
-		}
-		# add sound card and additional notes if eanbled in the config
-		if self.config["additional_system_requirements"]["sound_card"]:
-			system_requirements["Sound Card"] = (
-				self.generators.system_requirements.sound_card.generate(
+		# system requirements;
+		# use a list to guarentee ordering
+		system_requirements = [
+			{
+				"name": "OS",
+				"value": self.generators.system_requirements.os.generate(
 					size=abs(random.gauss(4, 2))
 				)
-			)
-			
-		if self.config["additional_system_requirements"]["additional_notes"]:
-			system_requirements["Additional Notes"] = (
-				self.generators.system_requirements.additional_notes.generate(
+			},
+			{
+				"name": "Processor",
+				"value": self.generators.system_requirements.processor.generate(
 					size=abs(random.gauss(9, 4))
 				)
+			},
+			{
+				"name": "Memory",
+				"value": self.generators.system_requirements.memory.generate(
+					size=min(abs(random.gauss(5, 4)), 10)
+				)
+			},
+			{
+				"name": "Graphics",
+				"value": self.generators.system_requirements.graphics.generate(
+					size=min(abs(random.gauss(9, 4)), 20)
+				)
+			},
+			{
+				"name": "Storage",
+				"value": self.generators.system_requirements.storage.generate(
+					size=abs(random.gauss(4, 2))
+				)
+			}
+		]
+
+		# add other categories only if specified in the config
+		if self.config["additional_system_requirements"]["sound_card"]:
+			system_requirements.append(
+				{
+					"name": "Sound Card",
+					"value": self.generators.system_requirements.sound_card.generate(
+						size=abs(random.gauss(4, 2))
+					)
+				}
 			)
-			
+
+		if self.config["additional_system_requirements"]["additional_notes"]:
+			system_requirements.append(
+				{
+					"name": "Additional Notes",
+					"value": self.generators.system_requirements.additional_notes.generate(
+						size=abs(random.gauss(9, 4))
+					)
+				}
+			)
 
 		return {
 			"description": description_html,
