@@ -80,7 +80,7 @@ class Generator:
 
 		if continue_until_valid:
 			word = words[-1]
-			while word.lower() in ("as", "a", "is", "of", "or", "the", "and", "under", "over", "your"):
+			while word.lower() in ("as", "a", "is", "of", "or", "the", "and", "under", "over", "your", "with"):
 				word = self.get_word()
 				words.append(word)
 

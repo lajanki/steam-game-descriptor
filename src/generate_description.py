@@ -168,7 +168,8 @@ class DescriptionGenerator():
 				{
 					"name": "Additional Notes",
 					"value": self.generators.system_requirements.additional_notes.generate(
-						size=abs(random.gauss(9, 4))
+						size=abs(random.gauss(9, 4)),
+						continue_until_valid=True
 					)
 				}
 			)
