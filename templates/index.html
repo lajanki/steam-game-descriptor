@@ -46,15 +46,7 @@
 						request.setRequestHeader("X-Button-Callback", "true");
 						// Hide description content and display the loader
 						$("#loader").show();
-						$(`
-							#description,
-						 	#tagline,
-							#sub_sections,
-							#features,
-							#developer > span,
-							#tags,
-							#system_requirements
-						`).text("");
+						$(".clearable").text("");
 					},
 					dataType: "json",
 					url: $SCRIPT_ROOT + "/_generate",
@@ -85,15 +77,8 @@
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
 						$("#loader").hide();
+						$(".clearable").text("");
 						$("#description").html("<h1>Something went wrong, try again</h1>");
-						$(`
-						 	#tagline,
-							#sub_sections,
-							#features,
-							#developer > span,
-							#tags,
-							#system_requirements
-						`).text("");
 					}
 				});
 				return false;
@@ -126,17 +111,17 @@
 							</div>
 						</div>
 
-						<div id="description"></div>
-						<div id="tagline"></div>
-						<div id="sub_sections"></div>
-						<div id="features"></div>
+						<div class="clearable" id="description"></div>
+						<div class="clearable" id="tagline"></div>
+						<div class="clearable" id="sub_sections"></div>
+						<div class="clearable" id="features"></div>
 						<div id="developer">
-							<span>Developer: </span>
+							<span class="clearable">Developer: </span>
 						</div>
-						<div id="tags"></div>
-						<div id="system_requirements_container">
+						<div class="clearable" id="tags"></div>
+						<div class="clearable" id="system_requirements_container">
 							<h3>System Requirements</h3>
-							<ul id="system_requirements"></ul>
+							<ul class="clearable" id="system_requirements"></ul>
 						</div>
 
 						<hr/>
