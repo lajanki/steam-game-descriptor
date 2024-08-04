@@ -46,14 +46,15 @@
 						request.setRequestHeader("X-Button-Callback", "true");
 						// Hide description content and display the loader
 						$("#loader").show();
-						$("#description").text("");
-						$("#tagline").text("");
-						$("#sub_sections").text("");
-						$("#features").text("");
-						$("#developer > span").text("");
-						$("#tags").text("");
-						$("#system_requirements").text("");
-						
+						$(`
+							#description,
+						 	#tagline,
+							#sub_sections,
+							#features,
+							#developer > span,
+							#tags,
+							#system_requirements
+						`).text("");
 					},
 					dataType: "json",
 					url: $SCRIPT_ROOT + "/_generate",
@@ -83,13 +84,16 @@
 						}
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
-						$("#description").html("<h1>Something went wrong, try again</h1>");
-						$("#tagline").text("");
-						$("#sub_sections").text("");
-						$("#features").text("");
-						$("#developer > span").text("");
-						$("#tags").text("");
 						$("#loader").hide();
+						$("#description").html("<h1>Something went wrong, try again</h1>");
+						$(`
+						 	#tagline,
+							#sub_sections,
+							#features,
+							#developer > span,
+							#tags,
+							#system_requirements
+						`).text("");
 					}
 				});
 				return false;
@@ -115,6 +119,13 @@
 				<!-- Container for the description and a loader div -->
 				<div class="card">
 					<div class="card-body">
+						<!-- A spinning loader to be displayed while new description is being loaded -->
+						<div class="text-center" id="loader">
+							<div class="spinner-border text-primary" role="status">
+								<span class="sr-only">Loading...</span>
+							</div>
+						</div>
+
 						<div id="description"></div>
 						<div id="tagline"></div>
 						<div id="sub_sections"></div>
@@ -126,13 +137,6 @@
 						<div id="system_requirements_container">
 							<h3>System Requirements</h3>
 							<ul id="system_requirements"></ul>
-						</div>
-
-						<!-- A spinning loader to be displayed while new description is being loaded -->
-						<div class="text-center" id="loader">
-							<div class="spinner-border text-primary" role="status">
-								<span class="sr-only">Loading...</span>
-							</div>
 						</div>
 
 						<hr/>
