@@ -1,21 +1,14 @@
 # Generate a randomized game description with a title and a list of features.
 
-import os.path
 import random
 import re
-import json
 import string
 from types import SimpleNamespace
 
 import markdown
 
+from src import data_files
 from src.generator import generator
-
-
-POS_TAG_FILE = os.path.join("data", "pos_tags.json")
-DEVELOPER_FILE = os.path.join("data", "developers.txt")
-TAG_FILE = os.path.join("data", "tags.txt")
-SEED_FILE = os.path.join("data", "seeds.json")
 
 
 class DescriptionGenerator():
@@ -52,9 +45,7 @@ class DescriptionGenerator():
 		# Randomize a new content config for each run
 		self.config = create_config()
 
-		# Choose a random seed from seeds.txt
-		with open(SEED_FILE) as f:
-			seeds = json.load(f)
+		seeds = data_files.SEEDS
 
 		main_sections = []
 
@@ -210,11 +201,7 @@ def create_config():
 
 def generate_tags():
 	"""Choose 2-5 random game tags from file."""
-	with open(TAG_FILE) as f:
-		tags = f.readlines()
-
-	# choose number of tags to generate,
-	# 1-3 should happen more frequently than 4-6
+	# choosing >3 tags should occur less frequently
 	r = random.random()
 	if r < 0.67: 
 		k = random.randint(2,3)
@@ -223,7 +210,7 @@ def generate_tags():
 	else:
 		k = 5
 	
-	sample = random.sample(tags, k)
+	sample = random.sample(data_files.TAGS, k)
 	sample = list(map(str.rstrip, sample))
 	return sample
 
@@ -231,11 +218,9 @@ def generate_developer():
 	"""Generate a developer name from filling templates in data/developers.txt
 	with POS data from the app names files.
 	"""
-	with open(DEVELOPER_FILE) as f, open(POS_TAG_FILE) as g:
-		dev_templates = f.readlines()
-		pos_map = json.load(g)
+	template = random.choice(data_files.DEVELOPER_TEMPLATES).rstrip()
+	pos_map = data_files.POS_MAP
 
-	template = random.choice(dev_templates).rstrip()
 	
 	# template can be
 	#  1. undetermined, such as {{}} Software, where 1-2 nouns and adjectives should be fetched from the POS tag map

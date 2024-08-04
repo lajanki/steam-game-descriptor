@@ -1,10 +1,8 @@
 from collections import defaultdict
 import json
+import os.path
 
 import nltk
-
-from src.generate_description import POS_TAG_FILE
-
 
 
 def create_pos_tag_mapping():
@@ -25,5 +23,5 @@ def create_pos_tag_mapping():
 	for tag in d:
 		d[tag] = list(d[tag])
 		
-	with open(POS_TAG_FILE, "w") as f:
+	with open(os.path.join("data", "pos_tags.json")) as f:
 		json.dump(d, f, separators=(',', ':'))
