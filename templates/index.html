@@ -59,7 +59,9 @@
 						$("#description").append("<p>" + data.description[0].content + "</p>");
 
 						// tagline (if present)
-						$("#tagline").html("<i>" + data.tagline + "</i>");
+						if (data.tagline) {
+							$("#tagline").append(`<i>"${data.tagline}"</i>`);
+						}
 
 						// add remaining description paragraphs (if any)
 						for (let i = 1; i < data.description.length; i++) {
@@ -67,10 +69,10 @@
 							$("#description").append("<p>" + data.description[i].content + "</p>");
 						}	
 
-						// features; add a fixed title if features are present
+						// features; add with a fixed title if any features present
 						var ul = $("<ul></ul>");
 							if (data.features.length) {
-								$("#features").append(`<h3>Features:</h3>`);
+								$("#features").append(`<h3 class="section_header">Features</h3>`);
 								$("#features").append(ul);
 							
 							for (let feature of data.features) {
@@ -138,7 +140,7 @@
 						</div>
 						<div class="clearable" id="tags"></div>
 						<div id="system_requirements_container">
-							<h3>System Requirements</h3>
+							<h3 class="section_header">System Requirements</h3>
 							<ul class="clearable" id="system_requirements"></ul>
 						</div>
 
