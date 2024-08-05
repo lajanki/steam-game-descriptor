@@ -53,16 +53,35 @@
 					success: function(data) {
 						// Set description content and hide loader
 						$("#loader").hide();
-						$("#description").html(data.description);
-						$("#tagline").html("<i>" +  data.tagline + "</i>");
-						$("#sub_sections").html(data.subsections);
-						$("#features").html(data.features);
+
+						// main content
+						$("#description").append("<h2>" + data.description[0].title + "</h2>");
+						$("#description").append("<p>" + data.description[0].content + "</p>");
+
+						// tagline (if present)
+						$("#tagline").html("<i>" + data.tagline + "</i>");
+
+						// add remaining description paragraphs (if any)
+						for (let i = 1; i < data.description.length; i++) {
+							$("#description").append("<h3>" + data.description[i].title + "</h3>");
+							$("#description").append("<p>" + data.description[i].content + "</p>");
+						}	
+
+						// features; add a fixed title if features are present
+						var ul = $("<ul></ul>");
+							if (data.features.length) {
+								$("#features").append(`<h3>Features:</h3>`);
+								$("#features").append(ul);
+							
+							for (let feature of data.features) {
+								$("#features > ul").append(`<li>${feature}</li>`);
+							}
+						}
 
 						var developer = "Developer: " + data.developer
 						$("#developer > span").text(developer);
 
-						// create <span> html string for every tag in the response and set as
-						// the #tags element
+						// tags; create <span> element for each tag
 						var html = "";
 						for (let i = 0; i < data.tags.length; i++) {
 							var tag_html = "<span class='game-tag'>" + data.tags[i] + "</span>";
@@ -70,7 +89,7 @@
 						}	
 						$("#tags").html(html);
 
-						// Add system requirements as a list
+						// system requirements
 						for (let category of data.system_requirements) {
 							$("#system_requirements").append(`<li><b>${category["name"]}</b>: ${category["value"]}</li>`);
 						}
@@ -113,13 +132,12 @@
 
 						<div class="clearable" id="description"></div>
 						<div class="clearable" id="tagline"></div>
-						<div class="clearable" id="sub_sections"></div>
 						<div class="clearable" id="features"></div>
 						<div id="developer">
 							<span class="clearable">Developer: </span>
 						</div>
 						<div class="clearable" id="tags"></div>
-						<div class="clearable" id="system_requirements_container">
+						<div id="system_requirements_container">
 							<h3>System Requirements</h3>
 							<ul class="clearable" id="system_requirements"></ul>
 						</div>
