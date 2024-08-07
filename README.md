@@ -56,7 +56,7 @@ Flask application assumes all listed models are present in the storage bucket at
 
 When adding new models, run the following to update the model files in the production bucket:
 ```bash
-dotenv -f .env.prod run python -m src.setup_gcs_models.py 
+dotenv -f .env.prod run python -m src.setup_gcs_models
 ```
 
 
