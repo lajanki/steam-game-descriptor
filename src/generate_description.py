@@ -1,20 +1,14 @@
 # Generate a randomized game description with a title and a list of features.
 
-import os.path
 import random
 import re
-import json
 import string
+from types import SimpleNamespace
 
 import markdown
 
+from src import data_files
 from src.generator import generator
-
-
-POS_TAG_FILE = os.path.join("data", "pos_tags.json")
-DEVELOPER_FILE = os.path.join("data", "developers.txt")
-TAG_FILE = os.path.join("data", "tags.txt")
-SEED_FILE = os.path.join("data", "seeds.json")
 
 
 class DescriptionGenerator():
@@ -29,26 +23,36 @@ class DescriptionGenerator():
 
 	def __init__(self):
 		"""Load pre-trained generators for description and title."""
-		self.markov_generator = generator.Generator("model.pkl")
-		self.title_generator = generator.Generator("model_titles.pkl")
-		self.feature_generator = generator.Generator("model_features.pkl")
-		self.taglines_generator = generator.Generator("model_taglines.pkl")
+		self.generators = SimpleNamespace(
+			description = generator.Generator("description.pkl"),
+			title = generator.Generator("title.pkl"),
+			feature = generator.Generator("feature.pkl"),
+			tagline = generator.Generator("tagline.pkl"),
 
+			system_requirements = SimpleNamespace(
+				os = generator.Generator("requirements_OS.pkl"),
+				processor = generator.Generator("requirements_Processor.pkl"),
+				memory = generator.Generator("requirements_Memory.pkl"),
+				graphics = generator.Generator("requirements_Graphics.pkl"),
+				storage = generator.Generator("requirements_Storage.pkl"),
+				sound_card = generator.Generator("requirements_Sound_Card.pkl"),
+				additional_notes = generator.Generator("requirements_Additional_Notes.pkl")
+			)
+		)
 
 	def __call__(self):
 		"""Generate a description with random number of paragraphs and content types."""
 		# Randomize a new content config for each run
 		self.config = create_config()
 
-		# Choose a random seed from seeds.txt
-		with open(SEED_FILE) as f:
-			seeds = json.load(f)
+		seeds = data_files.SEEDS
 
 		main_sections = []
 
-		# title 
+		# title
 		size = random.randint(1,4)
-		title = self.title_generator.generate(size=size, continue_until_valid=True)
+		title = self.generators.title.generate(size=size, continue_until_valid=True)
+
 		title = string.capwords(title.rstrip(".")) # use string.capwords to avoid issues with apostrophes
 		title = title.replace(".", ":")
 		main_sections.append(f"## {title}")
@@ -56,13 +60,13 @@ class DescriptionGenerator():
 		# tagline
 		tagline = ""
 		if self.config["tagline"]:
-			tagline = self.taglines_generator.generate(size=4, complete_sentence=True)
+			tagline = self.generators.tagline.generate(size=4, complete_sentence=True)
 
 		# main description
 		for _ in range(self.config["paragraphs"]):
-			size = int(abs(random.gauss(15, 3.0)))
+			size = int(abs(random.gauss(15, 3)))
 			seed = random.choice(seeds["text"])
-			paragraph = self.markov_generator.generate(seed=seed, size=size, complete_sentence=True)
+			paragraph = self.generators.description.generate(seed=seed, size=size, complete_sentence=True)
 			main_sections.append(paragraph)
 			seed = None
 
@@ -73,13 +77,13 @@ class DescriptionGenerator():
 		sub_sections = []
 		for _ in range(self.config["subsections"]):
 			seed = random.choice(seeds["headers"])
-			header = self.markov_generator.generate(seed=seed, size=3, continue_until_valid=True)
+			header = self.generators.description.generate(seed=seed, size=3, continue_until_valid=True)
 			header = string.capwords(header.rstrip("."))
 			sub_sections.append(f"#### {header}")
 
-			self.markov_generator.ff_to_next_sentence()
-			size = int(abs(random.gauss(15, 3.0)))
-			paragraph = self.markov_generator.generate(size=size, complete_sentence=True)
+			self.generators.description.ff_to_next_sentence()
+			size = int(abs(random.gauss(15, 3)))
+			paragraph = self.generators.description.generate(size=size, complete_sentence=True)
 			sub_sections.append(paragraph)
 
 		sections_text = "\n".join(sub_sections)
@@ -88,8 +92,12 @@ class DescriptionGenerator():
 		# list of features
 		feature_list = []
 		for _ in range(self.config["features"]):
-			size = min(random.gauss(12, 4), 22) # features should be short
-			feature = f" * {self.feature_generator.generate(size=size, complete_sentence=True)}"
+			# set a shorthish upper bound
+			size = min(
+				int(abs(random.gauss(12, 4))),
+				22
+			)
+			feature = f" * {self.generators.feature.generate(size=size, complete_sentence=True)}"
 			feature_list.append(feature)
 
 		if feature_list:
@@ -100,40 +108,100 @@ class DescriptionGenerator():
 
 		features_html = markdown.markdown(features)
 
+		# system requirements;
+		# use a list to guarentee ordering
+		system_requirements = [
+			{
+				"name": "OS",
+				"value": self.generators.system_requirements.os.generate(
+					size=abs(random.gauss(4, 2))
+				)
+			},
+			{
+				"name": "Processor",
+				"value": self.generators.system_requirements.processor.generate(
+					size=abs(random.gauss(9, 4))
+				)
+			},
+			{
+				"name": "Memory",
+				"value": self.generators.system_requirements.memory.generate(
+					size=min(abs(random.gauss(5, 4)), 10)
+				)
+			},
+			{
+				"name": "Graphics",
+				"value": self.generators.system_requirements.graphics.generate(
+					size=min(abs(random.gauss(9, 4)), 20)
+				)
+			},
+			{
+				"name": "Storage",
+				"value": self.generators.system_requirements.storage.generate(
+					size=abs(random.gauss(4, 2))
+				)
+			}
+		]
+
+		# add other categories only if specified in the config
+		if self.config["additional_system_requirements"]["sound_card"]:
+			system_requirements.append(
+				{
+					"name": "Sound Card",
+					"value": self.generators.system_requirements.sound_card.generate(
+						size=abs(random.gauss(4, 2))
+					)
+				}
+			)
+
+		if self.config["additional_system_requirements"]["additional_notes"]:
+			system_requirements.append(
+				{
+					"name": "Additional Notes",
+					"value": self.generators.system_requirements.additional_notes.generate(
+						size=abs(random.gauss(9, 4)),
+						continue_until_valid=True
+					)
+				}
+			)
+
 		return {
 			"description": description_html,
 			"subsections": sections_html,
 			"features": features_html,
 			"tagline": tagline,
-			"tags":	generate_tags(),
-			"developer": generate_developer()
+			"tags": generate_tags(),
+			"developer": generate_developer(),
+			"system_requirements": system_requirements,
 		}
 
-
 def create_config():
-	"""Create a randomized config for number of paragraphs and
-	types of content to display.
-	Content can either be either:
+	"""Create a randomized config for which sections and how many to include
+	in the description.
+
+	Main content can include either:
 		* main paragraph(s) and a number of subsections with headers, or
 		* main paragraph(s) and a list of features
+	
+	Optional system requirements include a sound card and additional notes.
 	"""
-	# randomly create either features or subsections
+	# randomly determine whether to add a list of features or subsections
 	num_of_features = random.randint(2,5) if random.randint(0,1) else 0
 	num_of_subsections = random.randint(1,2) if num_of_features == 0 else 0
 	return {
 		"paragraphs": random.randint(1,2),
 		"features": num_of_features,
 		"subsections": num_of_subsections,
-		"tagline": random.randint(0,1)
+		"tagline": random.randint(0,1),
+		"additional_system_requirements": {	
+			"sound_card": random.random() > 0.75,
+			"additional_notes": random.random() > 0.75
+		}
 	}
 
 def generate_tags():
 	"""Choose 2-5 random game tags from file."""
-	with open(TAG_FILE) as f:
-		tags = f.readlines()
-
-	# choose number of tags to generate,
-	# 1-3 should happen more frequently than 4-6
+	# choosing >3 tags should occur less frequently
 	r = random.random()
 	if r < 0.67: 
 		k = random.randint(2,3)
@@ -142,7 +210,7 @@ def generate_tags():
 	else:
 		k = 5
 	
-	sample = random.sample(tags, k)
+	sample = random.sample(data_files.TAGS, k)
 	sample = list(map(str.rstrip, sample))
 	return sample
 
@@ -150,11 +218,9 @@ def generate_developer():
 	"""Generate a developer name from filling templates in data/developers.txt
 	with POS data from the app names files.
 	"""
-	with open(DEVELOPER_FILE) as f, open(POS_TAG_FILE) as g:
-		dev_templates = f.readlines()
-		pos_map = json.load(g)
+	template = random.choice(data_files.DEVELOPER_TEMPLATES).rstrip()
+	pos_map = data_files.POS_MAP
 
-	template = random.choice(dev_templates).rstrip()
 	
 	# template can be
 	#  1. undetermined, such as {{}} Software, where 1-2 nouns and adjectives should be fetched from the POS tag map

@@ -1,7 +1,12 @@
+import logging
 import random
 import pickle
 
 from src import utils
+
+
+DEFAULT_TEXT_LENGTH = 25
+logger = logging.getLogger("main")
 
 
 class Generator:
@@ -17,10 +22,10 @@ class Generator:
 		self._key = random.choice(list(self.model))
 
 	def _load_model(self, name):
-		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, name)
+		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, "models/" + name)
 		return pickle.loads(model_data)
 
-	def generate(self, seed=None, size=25, complete_sentence=False, continue_until_valid=False):
+	def generate(self, seed=None, size=DEFAULT_TEXT_LENGTH, complete_sentence=False, continue_until_valid=False):
 		"""Generates a string of size words by randomly selecting words from the successor dictionary using the
 		previous n-1 words as the key.
 		Arg:
@@ -32,6 +37,11 @@ class Generator:
 		Return:
 			the generated text
 		"""
+		# Ensure size is positive
+		if size <= 0:
+			logger.warning("Cannot create text with length %s, defaulting to %s", size, DEFAULT_TEXT_LENGTH)
+			size = DEFAULT_TEXT_LENGTH
+
 		words = []
 
 		# If a seed was provided and it is found in the model, initialize text with it and
@@ -70,7 +80,7 @@ class Generator:
 
 		if continue_until_valid:
 			word = words[-1]
-			while word.lower() in ("as", "a", "is", "of", "or", "the", "and", "under", "over", "your"):
+			while word.lower() in ("as", "a", "is", "of", "or", "the", "and", "under", "over", "your", "with"):
 				word = self.get_word()
 				words.append(word)
 
