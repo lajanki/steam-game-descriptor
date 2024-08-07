@@ -96,6 +96,10 @@ h4 {
 	font-weight: bold;
 }
 
+.section_header {
+	border-bottom: 1px solid #000000;
+}
+
 body {
 	/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#263d56+0,264d6b+38,26516f+75,004084+100,207cca+100,7db9e8+100 */
 	background: #263d56; /* Old browsers */
@@ -154,10 +158,6 @@ hr {
 div#system_requirements_container {
 	margin-top: 2em;
 	font-size: 13px;
-}
-
-#system_requirements_container > h3 {
-	border-bottom: 1px solid #000000;
 }
 
 ul#system_requirements {

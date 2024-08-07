@@ -1,13 +1,43 @@
-from unittest.mock import patch
+import json
+import jsonschema
+from unittest.mock import patch, MagicMock
+
+import pytest
+
 
 with patch("google.cloud.storage.Client"):
     from src import generate_description
 
 
+
+@pytest.fixture
+def mock_generator():
+    """Create a mock Generator class"""
+    with patch("src.generator.generator.Generator") as MockGenerator:
+        mock_gen_instance = MagicMock()
+        MockGenerator.return_value = mock_gen_instance
+        yield MockGenerator
+
+
+def test_generated_description_schema(mock_generator):
+    """Generated description object should match the schema
+    in description_schema.json.
+    """
+    mock_generator().generate.return_value = ""
+    g = generate_description.DescriptionGenerator()
+
+    with open("test/description_schema.json") as f:
+        schema = json.load(f)
+
+    jsonschema.validate(instance=g(), schema=schema)
+
+    # Dummy assert, the test fails if the schema validation fails.
+    assert True
+
 @patch("random.randint")
 @patch("random.choice")
 def test_developer_generation_open(mock_random_choice, mock_random_randint):
-    """Test developer template filling with 'open' (ie. {{}}) selection."""
+    """Test developer template filling with 'open' (ie. {{}} selection."""
 
     # Mock random.X calls to return 2 replacement words
     mock_random_randint.return_value = 2
@@ -30,8 +60,12 @@ def test_developer_generation_undetermined(mock_random_choice, mock_random_randi
     assert res == "A B Gaming"
 
 def test_number_of_paragraphs_in_config():
-    """Test exclusivity of features and subsections in the config."""
-    c = generate_description.create_config()
+    """Test exclusivity of features and subsections in the config:
+     * either subsections or features should be enabled
+    """
+    # since the numbers are randomized, roll n dice rolls and validate counts
+    for _ in range(10):
+        c = generate_description.create_config()
 
-    assert c["subsections"] * c["features"] == 0
-    assert max(c["subsections"], c["features"]) > 0
+        assert c["subsections"] * c["features"] == 0
+        assert max(c["subsections"], c["features"]) > 0

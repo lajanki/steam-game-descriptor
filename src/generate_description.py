@@ -5,8 +5,6 @@ import re
 import string
 from types import SimpleNamespace
 
-import markdown
-
 from src import data_files
 from src.generator import generator
 
@@ -44,71 +42,68 @@ class DescriptionGenerator():
 		"""Generate a description with random number of paragraphs and content types."""
 		# Randomize a new content config for each run
 		self.config = create_config()
-
 		seeds = data_files.SEEDS
 
-		main_sections = []
+		description = []
 
-		# title
-		size = random.randint(1,4)
+		# Title
+		size = random.randint(1, 4)
 		title = self.generators.title.generate(size=size, continue_until_valid=True)
 
-		title = string.capwords(title.rstrip(".")) # use string.capwords to avoid issues with apostrophes
+		title = string.capwords(title.rstrip("."))
 		title = title.replace(".", ":")
-		main_sections.append(f"## {title}")
 
-		# tagline
+		# Generate n paragraphs as main content
+		paragraphs = []
+		for _ in range(self.config["paragraphs"]):
+			size = int(abs(random.gauss(15, 3)))
+			seed = random.choice(seeds["text"])
+			paragraphs.append(
+				self.generators.description.generate(
+					seed=seed, size=size, complete_sentence=True
+				)
+			)
+		description.append({
+			"title": title,
+			"content": "\n\n".join(paragraphs)
+		})
+
+		# Repeat for sub sections if included in the config;
+		# 1 paragraph per section
+		for _ in range(self.config["subsections"]):
+			seed = random.choice(seeds["headers"])
+			header = self.generators.description.generate(
+				seed=seed, size=3, continue_until_valid=True
+			)
+			header = string.capwords(header.rstrip("."))
+			
+			self.generators.description.ff_to_next_sentence()
+			size = int(abs(random.gauss(15, 3)))
+			paragraph = self.generators.description.generate(
+				size=size, complete_sentence=True
+			)
+
+			description.append({
+				"title": header,
+				"content": paragraph
+			})
+
+		# List of features
+		features = []
+		for _ in range(self.config["features"]):
+			# set a shorthish upper bound
+			size = min(int(abs(random.gauss(12, 4))), 22)
+			features.append(
+				self.generators.feature.generate(size=size, complete_sentence=True)
+			)
+
+
+		# Tagline
 		tagline = ""
 		if self.config["tagline"]:
 			tagline = self.generators.tagline.generate(size=4, complete_sentence=True)
 
-		# main description
-		for _ in range(self.config["paragraphs"]):
-			size = int(abs(random.gauss(15, 3)))
-			seed = random.choice(seeds["text"])
-			paragraph = self.generators.description.generate(seed=seed, size=size, complete_sentence=True)
-			main_sections.append(paragraph)
-			seed = None
-
-		description = "\n".join(main_sections)
-		description_html = markdown.markdown(description)
-
-		# sub sections with headers
-		sub_sections = []
-		for _ in range(self.config["subsections"]):
-			seed = random.choice(seeds["headers"])
-			header = self.generators.description.generate(seed=seed, size=3, continue_until_valid=True)
-			header = string.capwords(header.rstrip("."))
-			sub_sections.append(f"#### {header}")
-
-			self.generators.description.ff_to_next_sentence()
-			size = int(abs(random.gauss(15, 3)))
-			paragraph = self.generators.description.generate(size=size, complete_sentence=True)
-			sub_sections.append(paragraph)
-
-		sections_text = "\n".join(sub_sections)
-		sections_html = markdown.markdown(sections_text)
-
-		# list of features
-		feature_list = []
-		for _ in range(self.config["features"]):
-			# set a shorthish upper bound
-			size = min(
-				int(abs(random.gauss(12, 4))),
-				22
-			)
-			feature = f" * {self.generators.feature.generate(size=size, complete_sentence=True)}"
-			feature_list.append(feature)
-
-		if feature_list:
-			feature_list.insert(0, "#### Features")
-			features = "\n".join(feature_list)
-		else:
-			features = ""
-
-		features_html = markdown.markdown(features)
-
-		# system requirements;
+		# System requirements;
 		# use a list to guarentee ordering
 		system_requirements = [
 			{
@@ -166,9 +161,8 @@ class DescriptionGenerator():
 			)
 
 		return {
-			"description": description_html,
-			"subsections": sections_html,
-			"features": features_html,
+			"description": description,
+			"features": features,
 			"tagline": tagline,
 			"tags": generate_tags(),
 			"developer": generate_developer(),
