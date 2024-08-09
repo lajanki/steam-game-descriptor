@@ -59,7 +59,7 @@ class Trainer():
 			[What, a, lovely], and
 			[a, lovely, day]
 		Return:
-			a generator yielding the ngrams
+			a generator yielding the ngrams as list of length n
 		"""
 		train_data = self.train_text_data.split()
 		if len(train_data) < self.n:
@@ -78,6 +78,9 @@ class Trainer():
 		degrees = [ len(self.model_data[key]) for key in self.model_data ]
 		median = statistics.median(degrees)
 		units = degrees.count(1) / len(degrees)
+		empty = degrees.count(0)
 		mb_size = sys.getsizeof(self.model_data) / 10**6
 
 		logger.info("Model statistics: median degree: %s, unit ngram rate: %.2f, size: %.2fMB", median, units, mb_size)
+		if empty:
+			logging.warning("Detected %d keys wihtout successors", empty)
