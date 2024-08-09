@@ -32,6 +32,9 @@ class Trainer():
 
 	def run(self):
 		"""Train a new model and upload to data bucket."""
+		if len(self.train_text_data) < 100:
+			raise RuntimeError("Cannot train a model with source data of length < 100")
+
 		self.train()
 		self.compute_statistics()
 
@@ -60,7 +63,7 @@ class Trainer():
 		"""
 		train_data = self.train_text_data.split()
 		if len(train_data) < self.n:
-			return
+			raise RuntimeError(f"Not enough words to split; received {len(train_data)}, need {self.n}")
 
 		# Yield each ngram
 		for i in range(len(train_data) - (self.n - 1)):
@@ -72,11 +75,7 @@ class Trainer():
 		 * unit ngram rate: the % of keys having degree 1
 		 * size in megabytes
 		"""
-		degrees = []
-		for key in self.model_data:
-			d = len(self.model_data[key])
-			degrees.append(d)
-
+		degrees = [ len(self.model_data[key]) for key in self.model_data ]
 		median = statistics.median(degrees)
 		units = degrees.count(1) / len(degrees)
 		mb_size = sys.getsizeof(self.model_data) / 10**6
