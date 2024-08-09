@@ -28,7 +28,7 @@ class Trainer():
 		self.n = n
 		self.train_text_data = train_text_data
 		self.filename = filename
-		self.model_data = None
+		self.model = None
 
 	def run(self):
 		"""Train a new model and upload to data bucket."""
@@ -38,7 +38,7 @@ class Trainer():
 		self.train()
 		self.compute_statistics()
 
-		model = pickle.dumps(self.model_data)
+		model = pickle.dumps(self.model)
 		utils.upload_to_gcs(model, utils.MODEL_BUCKET, "models/" + self.filename)
 
 	def train(self):
@@ -51,7 +51,7 @@ class Trainer():
 			key = tuple(ngram[:-1])  # convert to tuple for a hashable dictionary key
 			data[key].add(ngram[-1])
 
-		self.model_data = data
+		self.model = data
 
 	def create_ngrams(self):
 		"""Generator for creating ngrams from the training data. For instance,
@@ -75,11 +75,11 @@ class Trainer():
 		 * unit ngram rate: the % of keys having degree 1
 		 * size in megabytes
 		"""
-		degrees = [ len(self.model_data[key]) for key in self.model_data ]
+		degrees = [ len(self.model[key]) for key in self.model ]
 		median = statistics.median(degrees)
 		units = degrees.count(1) / len(degrees)
 		empty = degrees.count(0)
-		mb_size = sys.getsizeof(self.model_data) / 10**6
+		mb_size = sys.getsizeof(self.model) / 10**6
 
 		logger.info("Model statistics: median degree: %s, unit ngram rate: %.2f, size: %.2fMB", median, units, mb_size)
 		if empty:
