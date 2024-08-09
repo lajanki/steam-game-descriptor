@@ -107,14 +107,33 @@ def _get_app_id_list():
 
 	return app_ids
 
-def get_app_names():
-	"""Fetch a list of app names as a single joined string."""
+def get_app_names(batch_size=100_000):
+	"""Fetch a sampled list of app names as a single joined string.
+	Args:
+		batch_size (int): the sample size; number of apps to parse
+	Return:
+		a joined string of the app names
+	"""
 	r = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2")
 	app_list = r.json()["applist"]["apps"]
 	# Assert at least one ASCII chracter in the name
-	names = [ app["name"] for app in app_list if any(c in app["name"] for c in string.ascii_uppercase) ]
 
-	return " ".join(names)
+	# Filter results:
+	# * at least 1 uppercase ASCII character
+	# * ignore some test apps
+	names = [
+		app["name"]
+		for app in app_list
+		if (
+			not app["name"].lower().endswith("playtest")
+			and "valvetestapp" not in app["name"].lower()
+			and app["name"] not in ("test", "test2", "test3")
+			and any(c in app["name"] for c in string.ascii_uppercase)
+		)
+	]
+
+	sampled = random.sample(names, batch_size)
+	return " ".join(sampled)
 
 def _html_string_to_text(html_string):
 	"""Convert a html description to a regular text description."""
