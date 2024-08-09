@@ -50,11 +50,17 @@ flask -e .env.prod --app main:app run --debug
 ```
 
 ### Updating models
-The script `setup_gcs_models.py` can be run locally, without Flask application context, to save model changes to the Cloud Storage bucket.
-While the `/_train` endpoint performs the same action, it is mainly intended for periodically re-training production models. The
-Flask application assumes all listed models are present in the storage bucket at all times.
+The script `setup_gcs_models.py` can be run locally, without Flask application context, to apply model changes
+to the Cloud Storage bucket for development purposes.
+While the `/_train` endpoint performs the same action, it is mainly intended for periodically re-training
+existing production models.
 
-When adding new models, run the following to update the model files in the production bucket:
+To update the models, run
+```bash
+python -m src.setup_gcs_models
+```
+
+To override the default dev environment, run
 ```bash
 dotenv -f .env.prod run python -m src.setup_gcs_models
 ```

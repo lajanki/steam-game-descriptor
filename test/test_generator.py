@@ -10,8 +10,14 @@ with patch("google.cloud.storage.Client"):
 @pytest.mark.parametrize(
     "input_key,expected_word,expected_output_key",
     [
-        (("If", "you"), "can", ("you", "can")),
-        (("which", "grain"), "will", ("grain", "will"))
+        (
+            ("If", "you"),
+            "can", ("you", "can")
+        ),
+        (
+            ("which", "grain"),
+            "will", ("grain", "will")
+        )
     ]
 )
 def test_next_word_selection(input_key, expected_word, expected_output_key):
@@ -49,7 +55,7 @@ def test_next_word_selection(input_key, expected_word, expected_output_key):
 
 @patch("src.generator.generator.Generator.get_word")
 def test_valid_seed(mock_get_word):
-    """Test generation with valid seed."""
+    """Test generation with a valid seed."""
     with patch("src.generator.generator.Generator._load_model") as mock_load_model:
         mock_load_model.return_value = {
             ('If', 'you'): ['can'],
