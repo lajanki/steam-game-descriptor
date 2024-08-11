@@ -28,14 +28,17 @@ class Trainer():
 		self.n = n
 		self.train_text_data = train_text_data
 		self.filename = filename
-		self.model_data = None
+		self.model = None
 
 	def run(self):
 		"""Train a new model and upload to data bucket."""
+		if len(self.train_text_data) < 100:
+			raise RuntimeError("Cannot train a model with source data of length < 100")
+
 		self.train()
 		self.compute_statistics()
 
-		model = pickle.dumps(self.model_data)
+		model = pickle.dumps(self.model)
 		utils.upload_to_gcs(model, utils.MODEL_BUCKET, "models/" + self.filename)
 
 	def train(self):
@@ -48,7 +51,7 @@ class Trainer():
 			key = tuple(ngram[:-1])  # convert to tuple for a hashable dictionary key
 			data[key].add(ngram[-1])
 
-		self.model_data = data
+		self.model = data
 
 	def create_ngrams(self):
 		"""Generator for creating ngrams from the training data. For instance,
@@ -56,11 +59,11 @@ class Trainer():
 			[What, a, lovely], and
 			[a, lovely, day]
 		Return:
-			a generator yielding the ngrams
+			a generator yielding the ngrams as list of length n
 		"""
 		train_data = self.train_text_data.split()
 		if len(train_data) < self.n:
-			return
+			raise RuntimeError(f"Not enough words to split; received {len(train_data)}, need {self.n}")
 
 		# Yield each ngram
 		for i in range(len(train_data) - (self.n - 1)):
@@ -72,13 +75,12 @@ class Trainer():
 		 * unit ngram rate: the % of keys having degree 1
 		 * size in megabytes
 		"""
-		degrees = []
-		for key in self.model_data:
-			d = len(self.model_data[key])
-			degrees.append(d)
-
+		degrees = [ len(self.model[key]) for key in self.model ]
 		median = statistics.median(degrees)
 		units = degrees.count(1) / len(degrees)
-		mb_size = sys.getsizeof(self.model_data) / 10**6
+		empty = degrees.count(0)
+		mb_size = sys.getsizeof(self.model) / 10**6
 
 		logger.info("Model statistics: median degree: %s, unit ngram rate: %.2f, size: %.2fMB", median, units, mb_size)
+		if empty:
+			logging.warning("Detected %d keys wihtout successors", empty)

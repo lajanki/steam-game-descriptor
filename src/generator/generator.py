@@ -92,9 +92,13 @@ class Generator:
 		Return
 			a randomly chosen word
 		"""
+		if not self.model[self._key]:
+			logger.warning("No successor for %s. Choosing a new seed.", self._key)
+			self._key = random.choice(list(self.model))
+
 		next_word = random.choice(list(self.model[self._key]))
 
-		# Update current key: shift to the right once and add the new word
+		# Update current key: shift to the right once and add the chosen word
 		self._key = (*self._key[1:], next_word)
 
 		return next_word

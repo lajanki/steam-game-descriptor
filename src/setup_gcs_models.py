@@ -1,6 +1,5 @@
 # Contains a setup function for creating new models and saving them to the remote bucket.
-# Useful for manually adding any new models as the Flask application expects all models to be present
-# at all times.
+# Useful for manually updating production models without a deployment context.
 #
 # To update production buckets run with
 # dotenv -f .env.prod run python -m src.setup_gcs_models.py 
