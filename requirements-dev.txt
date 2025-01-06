@@ -1,7 +1,11 @@
 beautifulsoup4
 flask
 google-cloud-storage
+google-cloud-secret-manager
 gunicorn
 jsonschema
+openai
+pillow
 pytest
 python-dotenv
+pyyaml

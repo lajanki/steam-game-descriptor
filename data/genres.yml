@@ -1,0 +1,321 @@
+Primary:
+  Shooter:
+    - FPS
+    - Third-Person
+    - Arena Shooter
+    - Bullet Hell
+    - Shoot 'Em Up
+    - Top-Down Shooter
+    - Post-apocalyptic
+    - Western
+    - MOBA
+    - Battle Royale
+
+  Fighting:
+    - 2D Fighter
+    - Beat 'em up
+    - Martial Arts
+    - Spectacle Fighter
+
+  Platformer:
+    - 2D
+    - 3D Platformer
+    - Side Scroller
+    - Puzzle-Platformer
+    - Western
+
+  Adventure:
+    - Point & Click
+    - Visual Novel
+    - Walking Simulator
+    - Exploration
+    - Metroidvania
+    - Stealth
+    - Survival
+    - Open World
+    - Sandbox
+    - Parkour
+    - Post-apocalyptic
+    - Western
+    - Souls-like
+
+  RPG:
+    - Action RPG
+    - JRPG
+    - CRPG
+    - Rogue-like
+    - Rogue-lite
+    - Dungeon Crawler
+    - Tactical RPG
+    - Strategy RPG
+    - Party-Based RPG
+    - RPGMaker
+    - Post-apocalyptic
+    - Western
+    - MMORPG
+
+  Strategy:
+    - Turn-Based Tactics
+    - Turn-Based Combat
+    - Tower Defense
+    - Grand Strategy
+    - 4X
+    - Card Game
+    - Board Game
+    - Hex Grid
+    - Naval
+    - Diplomacy
+
+  Simulation:
+    - Dating Sim
+    - Visual Novel
+    - City Builder
+    - Resource Management
+    - Time Management
+    - Flight
+    - Space Sim
+    - Racing
+    - Trains
+    - Sailing
+    - Tanks
+    - Football
+    - Soccer
+    - Fishing
+    - Hunting
+    - Base Building
+    - Crafting
+    - Naval
+    - Agriculture
+
+  Casual:
+    - Match 3
+    - Hidden Object
+    - Clicker
+    - Party
+    - Trivia
+    - Card Game
+    - Board Game
+    - LEGO
+    - Pinball
+    - Chess
+    - Puzzle-Platformer
+
+  Horror:
+    - Survival Horror
+    - Psychological Horror
+    - Gore
+    - Zombies
+    - Lovecraftian
+    - Dark Fantasy
+
+# common labels for all genres; used for image prompt
+Common:
+  - Steampunk
+  - Anime
+  - Fantasy
+  - Sci-fi
+  - Pixel Graphics
+  - Realistic
+  - Futuristic
+  - Medieval
+  - Cartoony
+  - Cyberpunk
+  - Magic
+  - World War II
+  - Hand-drawn
+  - Dystopian
+  - Voxel
+
+# labels to be used as frontend tags only; not for image prompts
+Other:
+  - Difficult
+  - Story Rich
+  - Atmospheric
+  - Female Protagonist
+  - First-Person
+  - Co-op
+  - Retro
+  - Comedy
+  - Sandbox
+  - Online Co-Op
+  - Replay Value
+  - Classic
+  - Masterpiece
+  - Controller
+  - Relaxing
+  - Third Person
+  - Space
+  - Colorful
+  - Education
+  - Fast-Paced
+  - Memes
+  - Tactical
+  - Local Multiplayer
+  - Dark
+  - Physics
+  - Mystery
+  - Short
+  - Building
+  - Mature
+  - Rogue-like
+  - Local Co-Op
+  - Choices Matter
+  - Historical
+  - Music
+  - Top-Down
+  - Competitive
+  - Character Customization
+  - PvP
+  - Dark Fantasy
+  - Post-apocalyptic
+  - Procedural Generation
+  - Old School
+  - Moddable
+  - 4 Player Local
+  - Drama
+  - Romance
+  - Stylized
+  - Addictive
+  - Beautiful
+  - Multiple Endings
+  - Surreal
+  - Episodic
+  - Isometric
+  - Dark Humor
+  - Military
+  - Blood
+  - Illuminati
+  - Team-Based
+  - Robots
+  - Economy
+  - Driving
+  - Epic
+  - Thriller
+  - Experimental
+  - Choose Your Own Adventure
+  - Perma Death
+  - Soundtrack
+  - Aliens
+  - Cult Classic
+  - Twin Stick Shooter
+  - Crime
+  - Destruction
+  - Text-Based
+  - Loot
+  - Level Editor
+  - 3D
+  - Detective
+  - PvE
+  - Real-Time
+  - Psychological
+  - Abstract
+  - Mouse only
+  - 2.5D
+  - Logic
+  - Alternate History
+  - Demons
+  - LGBTQ+
+  - Documentary
+  - Dark Comedy
+  - Split Screen
+  - Rhythm
+  - 3D Vision
+  - GameMaker
+  - Score Attack
+  - Mod
+  - Hidden Object
+  - Linear
+  - Touch-Friendly
+  - Science
+  - Remake
+  - Mechs
+  - Wargame
+  - Psychedelic
+  - Tutorial
+  - Pirates
+  - Ninja
+  - Narration
+  - Dragons
+  - Political
+  - Dinosaurs
+  - Lore-Rich
+  - Swordplay
+  - Dungeons & Dragons
+  - Co-op Campaign
+  - Cold War
+  - Games Workshop
+  - Comic Book
+  - Runner
+  - Superhero
+  - NSFW
+  - Supernatural
+  - Hacking
+  - Politics
+  - Hex Grid
+  - Western
+  - TrackIR
+  - God Game
+  - Noir
+  - Gun Customization
+  - Assassin
+  - Souls-like
+  - Parody
+  - Satire
+  - Cinematic
+  - Emotional
+  - Silent Protagonist
+  - Naval
+  - Experience
+  - Modern
+  - Grid-Based Movement
+  - Nonlinear
+  - Agriculture
+  - Crowdfunded
+  - Inventory Management
+  - Villain Protagonist
+  - Gothic
+  - Time Travel
+  - Mythology
+  - Minigames
+  - America
+  - Philisophical
+  - Quick-Time Events
+  - Heist
+  - Dog
+  - Trading
+  - Underwater
+  - Bullet Time
+  - Class-Based
+  - Time Attack
+  - Cats
+  - World War I
+  - Vampire
+  - FMV
+  - Based On A Novel
+  - Conspiracy
+  - Time Manipulation
+  - Sniper
+  - Warhammer 40K
+  - Programming
+  - Word Game
+  - Investigation
+  - 360 Video
+  - Sequel
+  - Capitalism
+  - LEGO
+  - Mining
+  - Mystery Dungeon
+  - Asynchronous Multiplayer
+  - Offroad
+  - Artificial Intelligence
+  - Music-Based Procedural Generation
+  - Dynamic Narration
+  - Horses
+  - Pinball
+  - Sailing
+  - 6DOF
+  - Faith
+  - Star Wars
+  - Gambling
+  - Mars
+  - Interactive Fiction

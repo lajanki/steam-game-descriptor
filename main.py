@@ -3,10 +3,15 @@ from flask import (
     Flask,
     jsonify,
     render_template,
-    request,
+    request
 )
-from src import generate_description, parser, setup_gcs_models
-
+from src import (
+    generate_description,
+    parser,
+    setup_gcs_models,
+    create_image,
+    utils
+)
 
 
 app = Flask(__name__)
@@ -50,7 +55,7 @@ def train_model():
         return "OK\n", 200
 
     abort(500, "Bad request")
-    
+
 @app.route("/_parse_descriptions")
 def parse_descriptions():
     """Cron only endpoint for parsing and uploading a new batch of descriptions to the data bucket."""
@@ -60,4 +65,13 @@ def parse_descriptions():
         return "OK\n", 200
 
     abort(500, "Bad request")
-	
+
+# DISABLED: to be activates once full screenshot support ready to be published
+# @app.route("/_generate_image")
+# def generate_image():
+#     """Generate a screenshot and upload to Cloud Storage bucket."""
+#     if "X-Appengine-Cron" in request.headers:
+#         create_image.upload_screenshot()
+#         return "OK\n", 200
+
+#     abort(500, "Bad request")

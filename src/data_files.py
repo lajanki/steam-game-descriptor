@@ -1,5 +1,6 @@
 import json
 import os.path
+import yaml
 
 
 # Read data files globally to avoid frequent file I/O
@@ -14,5 +15,8 @@ with open(os.path.join("data", "pos_tags.json")) as f:
 with open(os.path.join("data", "tags.txt")) as f:
 	TAGS = f.readlines()
 	
+with open(os.path.join("data", "genres.yml")) as f:
+	GENRES = yaml.safe_load(f)
+
 with open(os.path.join("data", "seeds.json")) as f:
 	SEEDS = json.load(f)

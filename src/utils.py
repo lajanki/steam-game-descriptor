@@ -2,9 +2,12 @@ import json
 import logging
 import os
 import os.path
+import random
 from collections import defaultdict
 
-from google.cloud import storage
+from google.cloud import storage, secretmanager
+
+from src.data_files import GENRES
 
 
 logger = logging.getLogger("main")
@@ -12,6 +15,7 @@ logger = logging.getLogger("main")
 MODEL_BUCKET = os.environ["MODEL_BUCKET"]
 TEMP_BUCKET = os.environ["TEMP_BUCKET"]
 TEMP_BUCKET_PREFIX = os.environ["TEMP_BUCKET_PREFIX"]
+CACHE_BUCKET = "dev_steam_game_descriptor_cache" # TODO
 
 gcs_client = storage.Client()
 
@@ -91,3 +95,44 @@ def merge_requirements(source_data_list):
     extracted_requirement_map["Storage"].extend(extracted_requirement_map.pop("Hard Disk Space", []))
     extracted_requirement_map["Additional Notes"].extend(extracted_requirement_map.pop("Additional", []))
     return extracted_requirement_map
+
+def select_tags():
+    """Randomly select a group of tags from a static file.
+    Tags include:
+     * 1 genre tag
+     * 1-2 genre dependant tags to be used as image generating prompt
+     * 0-2 additional tags to be used as display only
+    Return:
+        a dict of the differetn types of tags
+    """
+    genre, genre_tags = random.choice(list(GENRES["Primary"].items()))
+
+    # initialize tags with the genre and 1 matching primary tag
+    wrapper_tags = {
+        "genre": genre,
+        "prompt": [random.choice(genre_tags)],
+        "extra": []
+    }
+
+    # optionally add 1 common image prompt tag
+    if random.random() <= 0.5:
+         wrapper_tags["prompt"].append(random.choice(GENRES["Common"]))
+
+    # add 0-2 more text-only tags
+    r = random.random()
+    if r < 0.2:
+        return wrapper_tags 
+
+    elif r < 0.72:
+        wrapper_tags["extra"].append(random.choice(GENRES["Other"]))
+
+    else:
+        wrapper_tags["extra"].extend(random.choices(GENRES["Other"], k=2))
+
+    return wrapper_tags
+
+def get_openai_secret():
+	"""Fetch OpenAI API key from Secret Manager."""
+	client = secretmanager.SecretManagerServiceClient()
+	response = client.access_secret_version(name="projects/webhost-common/secrets/steam-game-descriptor-openai-key/versions/latest")
+	return response.payload.data.decode()
