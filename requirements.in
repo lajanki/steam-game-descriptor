@@ -8,4 +8,5 @@ openai
 pillow
 pytest
 python-dotenv
+pytest-env
 pyyaml

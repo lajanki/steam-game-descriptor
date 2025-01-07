@@ -4,9 +4,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-
-with patch("google.cloud.storage.Client"):
-    from app import generate_description
+from app import generate_description
 
 
 

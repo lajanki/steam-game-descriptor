@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from app import utils
 
+
 def test_merge_requirements_list():
     """A list containing requirements from multiple source
     files should be merged into one.
