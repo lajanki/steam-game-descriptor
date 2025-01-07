@@ -2,10 +2,8 @@ import json
 import os.path
 import yaml
 
+from app import BASE
 
-# Read data files globally to avoid frequent file I/O
- 
-BASE = os.path.dirname(__file__)
 
 with open(os.path.join(BASE, "data", "developers.txt")) as f:
 	DEVELOPER_TEMPLATES = f.readlines()

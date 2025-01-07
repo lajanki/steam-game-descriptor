@@ -49,16 +49,26 @@ to use the production bucket by starting the Flask server with
 flask -e .env.prod --app app.views:app run --debug
 ```
 
-### Updating models
-The script `setup_gcs_models.py` can be run locally, without Flask application context, to save model changes to the Cloud Storage bucket.
-While the `/_train` endpoint performs the same action, it is mainly intended for periodically re-training production models. The
-Flask application assumes all listed models are present in the storage bucket at all times.
+### Local maintenance tasks
+Some maintenance tasks can be run locally without the Flask webserver context with the helper 
+script `utils/tasks.py`. The include:
 
-When adding new models, run the following to update the model files in the production bucket:
+| Flag              | Description                                                    |
+|-------------------|----------------------------------------------------------------|
+| `--demo`            | Generate a sample game description in json format.             |
+| `--get-model-stats` | Show performance statistics for the current description model. |
+| `--train`           | Train new models and store to bucket.                          |
+
+To execute these tasks from the root folder, run with something like:
 ```shell
-dotenv -f .env.prod run python -m src.setup_gcs_models
+python -m utils.tasks --demo
 ```
 
+By default, these will use dev models. In order to run against the production state, load the
+production environment with
+```shell
+dotenv -f .env.prod run python -m utils.tasks --demo
+```
 
 ## Unit tests
 Unit tests can be run from the root folder with

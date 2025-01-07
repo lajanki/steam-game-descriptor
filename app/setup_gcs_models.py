@@ -1,14 +1,7 @@
-# Contains a setup function for creating new models and saving them to the remote bucket.
-# Useful for manually adding any new models as the Flask application expects all models to be present
-# at all times.
-#
-# To update production buckets run with
-# dotenv -f .env.prod run python -m src.setup_gcs_models.py 
-
-
 import logging
+import os
 
-from app import parser, utils
+from app import parser, utils, BASE
 from app.generator import trainer
 
 
@@ -34,12 +27,12 @@ def setup():
     t.run()
 
     logger.info("Creating feature model...")
-    feature_text = utils.get_text_file("data/features.txt")
+    feature_text = utils.get_text_file(os.path.join(BASE, "data", "features.txt"))
     t = trainer.Trainer(feature_text, "feature.pkl")
     t.run()
 
     logger.info("Creating tagline model...")
-    taglines_text = utils.get_text_file("data/taglines.txt")
+    taglines_text = utils.get_text_file(os.path.join(BASE, "data", "taglines.txt"))
     t = trainer.Trainer(taglines_text, "tagline.pkl")
     t.run()
 
@@ -53,7 +46,3 @@ def setup():
         t.run()
 
     logger.info("Models saved in gs://%s", utils.MODEL_BUCKET)
-
-
-if __name__ == "__main__":
-    setup()

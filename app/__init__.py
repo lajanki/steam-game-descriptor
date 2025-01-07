@@ -1,4 +1,6 @@
 import logging
+import os
+
 from dotenv import load_dotenv
 
 
@@ -14,6 +16,9 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
+
+
+BASE = os.path.dirname(__file__)
 
 
 # Load default environment variables. This will not override existing variables.
