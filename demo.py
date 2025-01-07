@@ -1,7 +1,7 @@
 # Generate randomized descriptions for demonstration purposes
 
 import json
-from src import generate_description
+from app import generate_description
 
 
 generator = generate_description.DescriptionGenerator()

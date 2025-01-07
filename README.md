@@ -28,16 +28,16 @@ Hosted on Google App Engine.
 
 ## Running locally
 Install Python packages with  
-```bash
+```shell
 pip install -r requirements.txt
 ```  
 Then, run in localhost with
-```bash
-flask --app main:app run --debug
+```shell
+flask --app app.views:app run --debug
 ```
 
 Maitenance requests for training new models can be tested locally by settings required headers with something like:
-```bash
+```shell
 curl "127.0.0.1:5000/_parse_descriptions?batch_size=40" -H "X-Appengine-Cron: 1"
 ```
 for parsing a new batch of game descriptions from Steam Store.
@@ -45,8 +45,8 @@ for parsing a new batch of game descriptions from Steam Store.
 ### Running locally in production mode
 When run locally, all output is stored to separate dev Cloud Storage bucket by default. If needed, this can be overridden
 to use the production bucket by starting the Flask server with
-```bash
-flask -e .env.prod --app main:app run --debug
+```shell
+flask -e .env.prod --app app.views:app run --debug
 ```
 
 ### Updating models
@@ -55,14 +55,14 @@ While the `/_train` endpoint performs the same action, it is mainly intended for
 Flask application assumes all listed models are present in the storage bucket at all times.
 
 When adding new models, run the following to update the model files in the production bucket:
-```bash
+```shell
 dotenv -f .env.prod run python -m src.setup_gcs_models
 ```
 
 
 ## Unit tests
 Unit tests can be run from the root folder with
-```bash
+```shell
 pytest
 ```
 

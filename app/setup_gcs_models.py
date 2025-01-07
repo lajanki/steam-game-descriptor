@@ -8,11 +8,11 @@
 
 import logging
 
-from src import parser, utils
-from src.generator import trainer
+from app import parser, utils
+from app.generator import trainer
 
 
-logger = logging.getLogger("main")
+logger = logging.getLogger()
 
 
 def setup():

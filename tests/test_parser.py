@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 with patch("google.cloud.storage.Client"):
-    from src import parser
+    from app import parser
 
 
 def test_description_parsing_on_html_tags():

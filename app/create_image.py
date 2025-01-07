@@ -8,7 +8,7 @@ from openai import OpenAI
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
-from src import utils
+from app import utils
 
 
 

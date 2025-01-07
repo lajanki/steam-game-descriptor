@@ -27,10 +27,10 @@ from collections import defaultdict
 
 from bs4 import BeautifulSoup
 
-from src import utils, json_set_encoder
+from app import utils, json_set_encoder
 
 
-logger = logging.getLogger("main")
+logger = logging.getLogger()
 
 URL = "https://store.steampowered.com/api/appdetails"
 

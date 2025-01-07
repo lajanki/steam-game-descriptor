@@ -5,8 +5,8 @@ import re
 import string
 from types import SimpleNamespace
 
-from src import data_files
-from src.generator import generator
+from app import data_files
+from app.generator import generator
 
 
 class DescriptionGenerator():

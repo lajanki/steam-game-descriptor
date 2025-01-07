@@ -5,7 +5,7 @@ from flask import (
     render_template,
     request
 )
-from src import (
+from . import (
     generate_description,
     parser,
     setup_gcs_models,
@@ -16,11 +16,12 @@ from src import (
 
 app = Flask(__name__)
 
+
 # Set the logging level to DEBUG if Flask is in debug mode
-if app.debug:
-    import logging
-    logger = logging.getLogger("main")
-    logger.setLevel(logging.DEBUG)
+# if app.debug:
+#     import logging
+#     logger = logging.getLogger()
+#     logger.setLevel(logging.DEBUG)
 
 
 # create DescriptionGenerator in the global namespace to limit

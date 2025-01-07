@@ -7,10 +7,10 @@ from collections import defaultdict
 
 from google.cloud import storage, secretmanager
 
-from src.data_files import GENRES
+from app.data_files import GENRES
 
 
-logger = logging.getLogger("main")
+logger = logging.getLogger()
 
 MODEL_BUCKET = os.environ["MODEL_BUCKET"]
 TEMP_BUCKET = os.environ["TEMP_BUCKET"]

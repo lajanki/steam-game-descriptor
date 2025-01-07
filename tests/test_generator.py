@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 with patch("google.cloud.storage.Client"):
-    from src.generator import generator
+    from app.generator import generator
 
 
 
@@ -19,7 +19,7 @@ def test_next_word_selection(input_key, expected_word, expected_output_key):
     is the expected word selected and key updated?
     Note: uses single element successor lists to force-select predetermined words
     """
-    with patch("src.generator.generator.Generator._load_model") as mock_load_model:
+    with patch("app.generator.generator.Generator._load_model") as mock_load_model:
         mock_load_model.return_value = {
             ('If', 'you'): ['can'],
             ('you', 'can'): ['look'],
@@ -47,10 +47,10 @@ def test_next_word_selection(input_key, expected_word, expected_output_key):
     assert g._key == expected_output_key
 
 
-@patch("src.generator.generator.Generator.get_word")
+@patch("app.generator.generator.Generator.get_word")
 def test_valid_seed(mock_get_word):
     """Test generation with valid seed."""
-    with patch("src.generator.generator.Generator._load_model") as mock_load_model:
+    with patch("app.generator.generator.Generator._load_model") as mock_load_model:
         mock_load_model.return_value = {
             ('If', 'you'): ['can'],
             ('you', 'can'): ['look']
@@ -63,13 +63,13 @@ def test_valid_seed(mock_get_word):
     res = g.generate(seed="A B If you", size=7)
     assert res == "A B If you one two three"
 
-@patch("src.generator.generator.Generator.get_word")
+@patch("app.generator.generator.Generator.get_word")
 def test_invalid_seed(mock_get_word):
     """Test generation with invalid seed:
     Something should be generated even when seed is not an element of the model.
     (this is mainly to test no execptions are raised)
     """
-    with patch("src.generator.generator.Generator._load_model") as mock_load_model:
+    with patch("app.generator.generator.Generator._load_model") as mock_load_model:
         mock_load_model.return_value = {
             ('If', 'you'): ['can'],
             ('you', 'can'): ['look']
@@ -81,10 +81,10 @@ def test_invalid_seed(mock_get_word):
     res = g.generate(seed="No such element", size=7)
     assert len(res.split()) == 7
 
-@patch("src.generator.generator.Generator.get_word")
+@patch("app.generator.generator.Generator.get_word")
 def test_sentence_completion(mock_get_word):
     """Are sentences continued until a natural break?"""
-    with patch("src.generator.generator.Generator._load_model") as mock_load_model:
+    with patch("app.generator.generator.Generator._load_model") as mock_load_model:
         mock_load_model.return_value = {
             ('If', 'you'): ['can']
         }
@@ -103,7 +103,7 @@ def test_sentence_completion(mock_get_word):
 
 def test_output_cleanup():
     """Are special characters removed during string cleanup?"""
-    with patch("src.generator.generator.Generator._load_model") as mock_load_model:
+    with patch("app.generator.generator.Generator._load_model") as mock_load_model:
         mock_load_model.return_value = {
             ('If', 'you'): ['can'],
             ('you', 'can'): ['look']
