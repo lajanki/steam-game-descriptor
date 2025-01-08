@@ -17,7 +17,9 @@ from . import (
 app = Flask(__name__)
 
 
-# Set the logging level to DEBUG if Flask is in debug mode
+# Set the logging level to DEBUG if Flask is in debug mode.
+# Note that will affect lower level loggers as well, including 
+# Cloud Storage logging.
 # if app.debug:
 #     import logging
 #     logger = logging.getLogger()
