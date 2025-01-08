@@ -108,7 +108,7 @@ Primary:
     - Lovecraftian
     - Dark Fantasy
 
-# common labels for all genres; used for image prompt
+# common labels for all genres; used for additional image prompt
 Common:
   - Steampunk
   - Anime
@@ -126,7 +126,7 @@ Common:
   - Dystopian
   - Voxel
 
-# labels to be used as frontend tags only; not for image prompts
+# labels to be used as frontend tags only
 Other:
   - Difficult
   - Story Rich

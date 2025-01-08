@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
-from src import utils
+from app import utils
+
 
 def test_merge_requirements_list():
     """A list containing requirements from multiple source
@@ -109,7 +110,7 @@ def test_ignore_non_whitelisted_caegories():
         "Graphics": ["256 MB", "128 MB"],
         "DirectX": ["Version 9.0"],
         "Storage": ["250 MB available space"],
-        "Additional Notes": []  # Missing category should default to an mepty list
+        "Additional Notes": []  # Missing category should default to an empty list
     }
 
     assert utils.merge_requirements(requirements) == expected

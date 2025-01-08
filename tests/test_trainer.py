@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
-with patch("google.cloud.storage.Client"):
-    from src.generator import trainer
+from app.generator import trainer
 
 
 def test_model_train():

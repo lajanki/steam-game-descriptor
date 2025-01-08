@@ -4,10 +4,10 @@ import logging
 import pickle
 import sys
 
-from src import utils
+from app import utils
 
 
-logger = logging.getLogger("main")
+logger = logging.getLogger()
 
 
 class Trainer():

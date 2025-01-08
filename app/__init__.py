@@ -1,9 +1,11 @@
 import logging
+import os
+
 from dotenv import load_dotenv
 
 
 # configure a logger
-logger = logging.getLogger("main")
+logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # create console handler
@@ -16,5 +18,8 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 
-# Load default environment variables. Will not override existing variables.
+BASE = os.path.dirname(__file__)
+
+
+# Load default environment variables. This will not override existing variables.
 load_dotenv(".env.dev")

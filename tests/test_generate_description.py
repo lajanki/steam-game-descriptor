@@ -4,16 +4,14 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-
-with patch("google.cloud.storage.Client"):
-    from src import generate_description
+from app import generate_description
 
 
 
 @pytest.fixture
 def mock_generator():
     """Create a mock Generator class"""
-    with patch("src.generator.generator.Generator") as MockGenerator:
+    with patch("app.generator.generator.Generator") as MockGenerator:
         mock_gen_instance = MagicMock()
         MockGenerator.return_value = mock_gen_instance
         yield MockGenerator
@@ -26,13 +24,10 @@ def test_generated_description_schema(mock_generator):
     mock_generator().generate.return_value = ""
     g = generate_description.DescriptionGenerator()
 
-    with open("test/description_schema.json") as f:
+    with open("tests/description_schema.json") as f:
         schema = json.load(f)
 
     jsonschema.validate(instance=g(), schema=schema)
-
-    # Dummy assert, the test fails if the schema validation fails.
-    assert True
 
 @patch("random.randint")
 @patch("random.choice")

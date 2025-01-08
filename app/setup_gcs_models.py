@@ -1,17 +1,11 @@
-# Contains a setup function for creating new models and saving them to the remote bucket.
-# Useful for manually updating production models without a deployment context.
-#
-# To update production buckets run with
-# dotenv -f .env.prod run python -m src.setup_gcs_models.py 
-
-
 import logging
+import os
 
-from src import parser, utils
-from src.generator import trainer
+from app import parser, utils, BASE
+from app.generator import trainer
 
 
-logger = logging.getLogger("main")
+logger = logging.getLogger()
 
 
 def setup():
@@ -33,12 +27,12 @@ def setup():
     t.run()
 
     logger.info("Creating feature model...")
-    feature_text = utils.get_text_file("data/features.txt")
+    feature_text = utils.get_text_file(os.path.join(BASE, "data", "features.txt"))
     t = trainer.Trainer(feature_text, "feature.pkl")
     t.run()
 
     logger.info("Creating tagline model...")
-    taglines_text = utils.get_text_file("data/taglines.txt")
+    taglines_text = utils.get_text_file(os.path.join(BASE, "data", "taglines.txt"))
     t = trainer.Trainer(taglines_text, "tagline.pkl")
     t.run()
 
@@ -52,7 +46,3 @@ def setup():
         t.run()
 
     logger.info("Models saved in gs://%s", utils.MODEL_BUCKET)
-
-
-if __name__ == "__main__":
-    setup()

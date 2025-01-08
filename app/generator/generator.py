@@ -2,11 +2,11 @@ import logging
 import random
 import pickle
 
-from src import utils
+from app import utils
 
 
 DEFAULT_TEXT_LENGTH = 25
-logger = logging.getLogger("main")
+logger = logging.getLogger()
 
 
 class Generator:

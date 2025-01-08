@@ -28,16 +28,16 @@ Hosted on Google App Engine.
 
 ## Running locally
 Install Python packages with  
-```bash
+```shell
 pip install -r requirements.txt
 ```  
 Then, run in localhost with
-```bash
-flask --app main:app run --debug
+```shell
+flask --app app.views:app run --debug
 ```
 
 Maitenance requests for training new models can be tested locally by settings required headers with something like:
-```bash
+```shell
 curl "127.0.0.1:5000/_parse_descriptions?batch_size=40" -H "X-Appengine-Cron: 1"
 ```
 for parsing a new batch of game descriptions from Steam Store.
@@ -45,30 +45,34 @@ for parsing a new batch of game descriptions from Steam Store.
 ### Running locally in production mode
 When run locally, all output is stored to separate dev Cloud Storage bucket by default. If needed, this can be overridden
 to use the production bucket by starting the Flask server with
-```bash
-flask -e .env.prod --app main:app run --debug
+```shell
+flask -e .env.prod --app app.views:app run --debug
 ```
 
-### Updating models
-The script `setup_gcs_models.py` can be run locally, without Flask application context, to apply model changes
-to the Cloud Storage bucket for development purposes.
-While the `/_train` endpoint performs the same action, it is mainly intended for periodically re-training
-existing production models.
+### Local maintenance tasks
+Some maintenance tasks can be run locally without the Flask webserver context with the helper 
+script `utils/tasks.py`. The include:
 
-To update the models, run
-```bash
-python -m src.setup_gcs_models
+| Flag              | Description                                                    |
+|-------------------|----------------------------------------------------------------|
+| `--demo`            | Generate a sample game description in json format.             |
+| `--get-model-stats` | Show performance statistics for the current description model. |
+| `--train`           | Train new models and store to bucket.                          |
+
+To execute these tasks from the root folder, run with something like:
+```shell
+python -m utils.tasks --demo
 ```
 
-To override the default dev environment, run
-```bash
-dotenv -f .env.prod run python -m src.setup_gcs_models
+By default, these will use dev models. In order to run against the production state, load the
+production environment with
+```shell
+dotenv -f .env.prod run python -m utils.tasks --demo
 ```
-
 
 ## Unit tests
 Unit tests can be run from the root folder with
-```bash
+```shell
 pytest
 ```
 
