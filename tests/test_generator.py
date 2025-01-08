@@ -9,8 +9,14 @@ from app.generator import generator
 @pytest.mark.parametrize(
     "input_key,expected_word,expected_output_key",
     [
-        (("If", "you"), "can", ("you", "can")),
-        (("which", "grain"), "will", ("grain", "will"))
+        (
+            ("If", "you"),
+            "can", ("you", "can")
+        ),
+        (
+            ("which", "grain"),
+            "will", ("grain", "will")
+        )
     ]
 )
 def test_next_word_selection(input_key, expected_word, expected_output_key):

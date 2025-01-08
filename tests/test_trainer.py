@@ -22,7 +22,7 @@ def test_model_train():
         ("and", "hope"): {"to"},
         ("hope", "to"): {"die"}
     }
-    assert t.model_data == expected
+    assert t.model == expected
 
 def test_model_on_duplicate_successors():
     """Test model train with duplicate ngrams."""
@@ -37,4 +37,4 @@ def test_model_on_duplicate_successors():
         ("too", "cold."): {"almost"},
         ("cold.", "almost"): {"too"}
     }
-    assert t.model_data == expected
+    assert t.model == expected
