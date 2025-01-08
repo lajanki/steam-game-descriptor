@@ -132,7 +132,7 @@ def select_tags():
     return wrapper_tags
 
 def get_openai_secret():
-	"""Fetch OpenAI API key from Secret Manager."""
-	client = secretmanager.SecretManagerServiceClient()
-	response = client.access_secret_version(name="projects/webhost-common/secrets/steam-game-descriptor-openai-key/versions/latest")
-	return response.payload.data.decode()
+    """Fetch OpenAI API key from Secret Manager."""
+    client = secretmanager.SecretManagerServiceClient()
+    response = client.access_secret_version(name="projects/webhost-common/secrets/steam-game-descriptor-openai-key/versions/latest")
+    return response.payload.data.decode()
