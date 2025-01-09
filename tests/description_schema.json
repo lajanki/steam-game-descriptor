@@ -37,12 +37,28 @@
         "type": "string"
       },
       "tags": {
-        "type": "array",
-        "items": [
-          {
+        "type": "object",
+        "properties": {
+          "genre": {
             "type": "string"
+          },
+          "context": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "extra": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
           }
-        ]
+        }
       },
       "developer": {
         "type": "string"

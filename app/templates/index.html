@@ -84,12 +84,13 @@
 						$("#developer > span").text(developer);
 
 						// tags; create <span> element for each tag
-						var html = "";
-						for (let i = 0; i < data.tags.length; i++) {
-							var tag_html = "<span class='game-tag'>" + data.tags[i] + "</span>";
-							html += tag_html;
+						// (1 genre tag and 0-n context and extra tags)
+						var tag_html = "<span class='game-tag'>" + data.tags.genre + "</span>";
+						var secondary_tags = data.tags.context.concat(data.tags.extra);
+						for (let i = 0; i < secondary_tags.length; i++) {
+							tag_html += "<span class='game-tag'>" + secondary_tags[i] + "</span>";;
 						}	
-						$("#tags").html(html);
+						$("#tags").html(tag_html);
 
 						// system requirements
 						for (let category of data.system_requirements) {

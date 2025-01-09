@@ -55,7 +55,7 @@ def create_image(tags):
     {}
     """.format(
         tags["genre"],
-        "".join([ " - " + t + "\n" for t in tags["prompt"]])
+        "".join([ " - " + t + "\n" for t in tags["context"]])
     ).strip()
 
     response = client.images.generate(
@@ -77,7 +77,7 @@ def create_image(tags):
     # Add the tags as custom metadata
     metadata = PngInfo()
     metadata.add_text("genre", tags["genre"])
-    for i, tag in enumerate(tags["prompt"] + tags["extra"]):
+    for i, tag in enumerate(tags["context"] + tags["extra"]):
         metadata.add_text(f"tag{i+1}", tag)
 
     # Create a new file pointer to avoid data corruption issues

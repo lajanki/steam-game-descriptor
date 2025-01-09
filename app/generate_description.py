@@ -5,7 +5,7 @@ import re
 import string
 from types import SimpleNamespace
 
-from app import data_files
+from app import data_files, utils
 from app.generator import generator
 
 
@@ -97,7 +97,6 @@ class DescriptionGenerator():
 				self.generators.feature.generate(size=size, complete_sentence=True)
 			)
 
-
 		# Tagline
 		tagline = ""
 		if self.config["tagline"]:
@@ -164,7 +163,7 @@ class DescriptionGenerator():
 			"description": description,
 			"features": features,
 			"tagline": tagline,
-			"tags": generate_tags(),
+			"tags": utils.select_tags(),
 			"developer": generate_developer(),
 			"system_requirements": system_requirements,
 		}
@@ -192,21 +191,6 @@ def create_config():
 			"additional_notes": random.random() > 0.75
 		}
 	}
-
-def generate_tags():
-	"""Choose 2-5 random game tags from file."""
-	# choosing >3 tags should occur less frequently
-	r = random.random()
-	if r < 0.67: 
-		k = random.randint(2,3)
-	elif r < 0.9:
-		k = random.randint(3,5)
-	else:
-		k = 5
-	
-	sample = random.sample(data_files.TAGS, k)
-	sample = list(map(str.rstrip, sample))
-	return sample
 
 def generate_developer():
 	"""Generate a developer name from filling templates in data/developers.txt
