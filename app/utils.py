@@ -8,6 +8,7 @@ from collections import defaultdict
 from google.cloud import storage, secretmanager
 
 from app.data_files import GENRES
+from app import nlp
 
 
 logger = logging.getLogger()
@@ -100,7 +101,7 @@ def select_tags():
     """Randomly select a group of tags from a static file.
     Tags include:
      * 1 genre tag
-     * 1-2 genre dependant tags to be used as image generating prompt
+     * 1-2 genre dependant tags to be used as context for text and image generation
      * 0-2 additional tags to be used as display only
     Return:
         a dict of the differetn types of tags
@@ -110,13 +111,13 @@ def select_tags():
     # initialize tags with the genre and 1 matching primary tag
     wrapper_tags = {
         "genre": genre,
-        "prompt": [random.choice(genre_tags)],
+        "context": [random.choice(genre_tags)],
         "extra": []
     }
 
-    # optionally add 1 common image prompt tag
+    # optionally add 1 common context tag for image prompt
     if random.random() <= 0.5:
-         wrapper_tags["prompt"].append(random.choice(GENRES["Common"]))
+         wrapper_tags["context"].append(random.choice(GENRES["Common"]))
 
     # add 0-2 more text-only tags
     r = random.random()
@@ -130,6 +131,17 @@ def select_tags():
         wrapper_tags["extra"].extend(random.choices(GENRES["Other"], k=2))
 
     return wrapper_tags
+
+def get_closest_word_match(context, choices):
+    """Find the word in a list of choices that is semantically closest 
+    to key.
+    Args:
+        context (str): the word to find a match for
+        choices (list): the list to look for the match
+    Return:
+        the matching word.
+    """
+    return sorted(choices, key=lambda x: nlp(context).similarity(nlp(x)))[-1]
 
 def get_openai_secret():
     """Fetch OpenAI API key from Secret Manager."""

@@ -5,7 +5,7 @@ import re
 import string
 from types import SimpleNamespace
 
-from app import data_files
+from app import data_files, utils
 from app.generator import generator
 
 
@@ -43,6 +43,7 @@ class DescriptionGenerator():
 		# Randomize a new content config for each run
 		self.config = create_config()
 		seeds = data_files.SEEDS
+		tags = utils.select_tags()
 
 		description = []
 
@@ -58,11 +59,16 @@ class DescriptionGenerator():
 		for _ in range(self.config["paragraphs"]):
 			size = int(abs(random.gauss(15, 3)))
 			seed = random.choice(seeds["text"])
+
 			paragraphs.append(
 				self.generators.description.generate(
-					seed=seed, size=size, complete_sentence=True
+					seed=seed,
+					size=size,
+					complete_sentence=True,
+					context=tags["genre"]  # use the genre as context
 				)
 			)
+
 		description.append({
 			"title": title,
 			"content": "\n\n".join(paragraphs)
@@ -80,7 +86,9 @@ class DescriptionGenerator():
 			self.generators.description.ff_to_next_sentence()
 			size = int(abs(random.gauss(15, 3)))
 			paragraph = self.generators.description.generate(
-				size=size, complete_sentence=True
+				size=size,
+				complete_sentence=True,
+				context=header # use the section header as context
 			)
 
 			description.append({
@@ -96,7 +104,6 @@ class DescriptionGenerator():
 			features.append(
 				self.generators.feature.generate(size=size, complete_sentence=True)
 			)
-
 
 		# Tagline
 		tagline = ""
@@ -164,7 +171,7 @@ class DescriptionGenerator():
 			"description": description,
 			"features": features,
 			"tagline": tagline,
-			"tags": generate_tags(),
+			"tags": tags,
 			"developer": generate_developer(),
 			"system_requirements": system_requirements,
 		}
@@ -192,21 +199,6 @@ def create_config():
 			"additional_notes": random.random() > 0.75
 		}
 	}
-
-def generate_tags():
-	"""Choose 2-5 random game tags from file."""
-	# choosing >3 tags should occur less frequently
-	r = random.random()
-	if r < 0.67: 
-		k = random.randint(2,3)
-	elif r < 0.9:
-		k = random.randint(3,5)
-	else:
-		k = 5
-	
-	sample = random.sample(data_files.TAGS, k)
-	sample = list(map(str.rstrip, sample))
-	return sample
 
 def generate_developer():
 	"""Generate a developer name from filling templates in data/developers.txt

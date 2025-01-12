@@ -1,6 +1,7 @@
 import logging
 import os
 
+import spacy
 from dotenv import load_dotenv
 
 
@@ -23,3 +24,6 @@ BASE = os.path.dirname(__file__)
 
 # Load default environment variables. This will not override existing variables.
 load_dotenv(".env.dev")
+
+# Load a pre-trained Spacy language model.
+nlp = spacy.load("en_core_web_md")
