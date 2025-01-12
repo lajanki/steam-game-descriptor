@@ -62,5 +62,5 @@ def test_number_of_paragraphs_in_config():
     for _ in range(10):
         c = generate_description.create_config()
 
-        assert c["subsections"] * c["features"] == 0
-        assert max(c["subsections"], c["features"]) > 0
+        assert c.num_subsections * c.num_features == 0
+        assert max(c.num_subsections, c.num_features) > 0

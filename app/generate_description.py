@@ -1,11 +1,12 @@
 # Generate a randomized game description with a title and a list of features.
 
+import dataclasses
 import random
 import re
 import string
 from types import SimpleNamespace
 
-from app import data_files, utils
+from app import data_files, utils, model_specs
 from app.generator import generator
 
 
@@ -56,7 +57,7 @@ class DescriptionGenerator():
 
 		# Generate n paragraphs as main content
 		paragraphs = []
-		for _ in range(self.config["paragraphs"]):
+		for _ in range(self.config.num_paragraphs):
 			size = int(abs(random.gauss(15, 3)))
 			seed = random.choice(seeds["text"])
 
@@ -76,7 +77,7 @@ class DescriptionGenerator():
 
 		# Repeat for sub sections if included in the config;
 		# 1 paragraph per section
-		for _ in range(self.config["subsections"]):
+		for _ in range(self.config.num_subsections):
 			seed = random.choice(seeds["headers"])
 			header = self.generators.description.generate(
 				seed=seed, size=3, continue_until_valid=True
@@ -98,7 +99,7 @@ class DescriptionGenerator():
 
 		# List of features
 		features = []
-		for _ in range(self.config["features"]):
+		for _ in range(self.config.num_features):
 			# set a shorthish upper bound
 			size = min(int(abs(random.gauss(12, 4))), 22)
 			features.append(
@@ -107,7 +108,7 @@ class DescriptionGenerator():
 
 		# Tagline
 		tagline = ""
-		if self.config["tagline"]:
+		if self.config.tagline:
 			tagline = self.generators.tagline.generate(size=4, complete_sentence=True)
 
 		# System requirements;
@@ -146,7 +147,7 @@ class DescriptionGenerator():
 		]
 
 		# add other categories only if specified in the config
-		if self.config["additional_system_requirements"]["sound_card"]:
+		if self.config.system_requirements.sound_card:
 			system_requirements.append(
 				{
 					"name": "Sound Card",
@@ -156,7 +157,7 @@ class DescriptionGenerator():
 				}
 			)
 
-		if self.config["additional_system_requirements"]["additional_notes"]:
+		if self.config.system_requirements.additional_notes:
 			system_requirements.append(
 				{
 					"name": "Additional Notes",
@@ -167,38 +168,44 @@ class DescriptionGenerator():
 				}
 			)
 
-		return {
-			"description": description,
-			"features": features,
-			"tagline": tagline,
-			"tags": tags,
-			"developer": generate_developer(),
-			"system_requirements": system_requirements,
-		}
+		description_model = model_specs.GameDescription(
+			description=description,
+			features=features,
+			tagline=tagline,
+			tags=tags,
+			developer=generate_developer(),
+			system_requirements=system_requirements
+		)
+		# return a json serializable dict
+		return dataclasses.asdict(description_model)
 
 def create_config():
 	"""Create a randomized config for which sections and how many to include
 	in the description.
 
-	Main content can include either:
+	Main content should include either:
 		* main paragraph(s) and a number of subsections with headers, or
 		* main paragraph(s) and a list of features
 	
 	Optional system requirements include a sound card and additional notes.
+
+	Return:
+		a DescriptionConfig instance
 	"""
 	# randomly determine whether to add a list of features or subsections
-	num_of_features = random.randint(2,5) if random.randint(0,1) else 0
-	num_of_subsections = random.randint(1,2) if num_of_features == 0 else 0
-	return {
-		"paragraphs": random.randint(1,2),
-		"features": num_of_features,
-		"subsections": num_of_subsections,
-		"tagline": random.randint(0,1),
-		"additional_system_requirements": {	
-			"sound_card": random.random() > 0.75,
-			"additional_notes": random.random() > 0.75
-		}
-	}
+	num_features = random.randint(2,5) if random.randint(0,1) else 0
+	num_subsections = random.randint(1,2) if num_features == 0 else 0
+
+	return model_specs.DescriptionConfig(
+        num_paragraphs=random.randint(1,2),
+        num_features=num_features,
+        num_subsections=num_subsections,
+        tagline=random.randint(0,1),
+        system_requirements=model_specs._SystemRequirementsConfig(
+            sound_card=random.random() > 0.75,
+			additional_notes=random.random() > 0.75
+		)
+    )
 
 def generate_developer():
 	"""Generate a developer name from filling templates in data/developers.txt
