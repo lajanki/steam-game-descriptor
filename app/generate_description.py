@@ -43,6 +43,7 @@ class DescriptionGenerator():
 		# Randomize a new content config for each run
 		self.config = create_config()
 		seeds = data_files.SEEDS
+		tags = utils.select_tags()
 
 		description = []
 
@@ -58,11 +59,16 @@ class DescriptionGenerator():
 		for _ in range(self.config["paragraphs"]):
 			size = int(abs(random.gauss(15, 3)))
 			seed = random.choice(seeds["text"])
+
 			paragraphs.append(
 				self.generators.description.generate(
-					seed=seed, size=size, complete_sentence=True
+					seed=seed,
+					size=size,
+					complete_sentence=True,
+					context=tags["genre"]  # use the genre as context
 				)
 			)
+
 		description.append({
 			"title": title,
 			"content": "\n\n".join(paragraphs)
@@ -80,7 +86,9 @@ class DescriptionGenerator():
 			self.generators.description.ff_to_next_sentence()
 			size = int(abs(random.gauss(15, 3)))
 			paragraph = self.generators.description.generate(
-				size=size, complete_sentence=True
+				size=size,
+				complete_sentence=True,
+				context=header # use the section header as context
 			)
 
 			description.append({
@@ -163,7 +171,7 @@ class DescriptionGenerator():
 			"description": description,
 			"features": features,
 			"tagline": tagline,
-			"tags": utils.select_tags(),
+			"tags": tags,
 			"developer": generate_developer(),
 			"system_requirements": system_requirements,
 		}

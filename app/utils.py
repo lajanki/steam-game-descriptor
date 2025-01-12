@@ -8,6 +8,7 @@ from collections import defaultdict
 from google.cloud import storage, secretmanager
 
 from app.data_files import GENRES
+from app import nlp
 
 
 logger = logging.getLogger()
@@ -130,6 +131,17 @@ def select_tags():
         wrapper_tags["extra"].extend(random.choices(GENRES["Other"], k=2))
 
     return wrapper_tags
+
+def get_closest_word_match(context, choices):
+    """Find the word in a list of choices that is semantically closest 
+    to key.
+    Args:
+        context (str): the word to find a match for
+        choices (list): the list to look for the match
+    Return:
+        the matching word.
+    """
+    return sorted(choices, key=lambda x: nlp(context).similarity(nlp(x)))[-1]
 
 def get_openai_secret():
     """Fetch OpenAI API key from Secret Manager."""

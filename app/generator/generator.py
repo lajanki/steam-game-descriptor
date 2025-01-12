@@ -25,15 +25,24 @@ class Generator:
 		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, "models/" + name)
 		return pickle.loads(model_data)
 
-	def generate(self, seed=None, size=DEFAULT_TEXT_LENGTH, complete_sentence=False, continue_until_valid=False):
+	def generate(
+		self,
+		seed=None,
+		size=DEFAULT_TEXT_LENGTH,
+		complete_sentence=False,
+		continue_until_valid=False,
+		context=None,
+	):
 		"""Generates a string of size words by randomly selecting words from the successor dictionary using the
 		previous n-1 words as the key.
 		Arg:
 			seed (str): initial text to start generting from. If None, a random key is chosen from the model data
 			size (int): minimum number of words the text should contain.
-			complete_sentence (boolean): continue adding words past minimum size until a punctuation
-				character or a whitelisted conjunction is encountered.
+			complete_sentence (boolean): continue adding words past the specified minimum size until a punctuation
+					character or a whitelisted conjunction is encountered.
 			continue_until_valid (boolean): continue adding words until a non-blacklisted word is encountered.
+			context (str): optional word to use as context for generation; used to look for semantically
+				similar words when multiple choices available. 
 		Return:
 			the generated text
 		"""
@@ -51,14 +60,14 @@ class Generator:
 			seed_tokens = seed.split()
 			key_length = len(model_keys[0])
 			key = tuple(seed_tokens[-key_length:])
-			
+
 			if key in self.model:
 				self._key = key
 				words.extend(seed_tokens)
 
 		# Keep generating words until length condition is satisfied
 		while len(words) < size:
-			word = self.get_word()
+			word = self.get_word(context)
 			words.append(word)
 
 		# To complete a sentence, keep adding words until a we encounter one ending in punctuation or
@@ -86,7 +95,7 @@ class Generator:
 
 		return self.cleanup(words)
 
-	def get_word(self):
+	def get_word(self, context=None):
 		"""Choose a random successor word from the model matching current key and 
 		update the key by joining the new word with the tail end of the old key.
 		Return
@@ -96,7 +105,11 @@ class Generator:
 			logger.warning("No successor for %s. Choosing a new seed.", self._key)
 			self._key = random.choice(list(self.model))
 
-		next_word = random.choice(list(self.model[self._key]))
+		choices = self.model[self._key]
+		if len(choices) > 1 and context:
+			next_word = utils.get_closest_word_match(context, choices)
+		else:
+			next_word = random.choice(list(self.model[self._key]))
 
 		# Update current key: shift to the right once and add the chosen word
 		self._key = (*self._key[1:], next_word)
@@ -122,7 +135,7 @@ class Generator:
 		# Ensure the first word is capitalized.
 		if tokens[0] != tokens[0].upper():
 			tokens[0] = tokens[0].capitalize().strip()
-			
+
 		text = " ".join(tokens)
 		replacements = {
 			",.": ".",
