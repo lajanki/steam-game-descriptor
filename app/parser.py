@@ -24,6 +24,7 @@ import random
 import requests
 import string
 from collections import defaultdict
+from datetime import datetime
 
 from bs4 import BeautifulSoup
 
@@ -73,11 +74,11 @@ def upload_description_batch(batch_size=200):
 				continue
 
 			# extract selected keys from the response and convert html string descriptions
-			# to plain strings. 
+			# to plain strings.
 			snapshot = format_data_dict(data)
-
+			ds = datetime.today().strftime("%Y-%m-%d")
 			name = data["name"].replace("/", "-") # Replace / to avoid issues with Cloud Storage prefixes
-			path = f"{TEMP_BUCKET_PREFIX}/{name}.json"
+			path = f"{TEMP_BUCKET_PREFIX}/{ds}/{name}.json"
 			utils.upload_to_gcs(
 				json.dumps(snapshot, cls=json_set_encoder.SetEncoder),
 				utils.TEMP_BUCKET,
@@ -134,6 +135,19 @@ def get_app_names(batch_size=100_000):
 	sampled = random.sample(names, batch_size)
 	return " ".join(sampled)
 
+def format_data_dict(app_content):
+	"""Format a dictionary containing items needed for training data. Gather various keys
+	from the source API response.
+	"""
+	return {
+		"detailed_description": _html_string_to_text(app_content["detailed_description"]),
+		"requirements": _extract_requirements(app_content),
+		"ratings": _extract_content_rating(app_content),
+		"metadata": {
+			"source": f"{URL}?appids={app_content['steam_appid']}"
+		}
+	}
+
 def _html_string_to_text(html_string):
 	"""Convert a html description to a regular text description."""
 	soup = BeautifulSoup(html_string, "html.parser")
@@ -153,23 +167,11 @@ def _html_string_to_text(html_string):
 	filtered = [word for word in words if not any(item in word.lower() for item in blacklist)]
 	return " ".join(filtered)
 
-def format_data_dict(snapshot):
-	"""Format a dictionary containing items needed for training data. Gather various keys
-	from the source API response.
-	"""
-	return {
-		"detailed_description": _html_string_to_text(snapshot["detailed_description"]),
-		"requirements": extract_requirements(snapshot),
-		"metadata": {
-			"source": f"{URL}?appids={snapshot['steam_appid']}"
-		}
-	}
-
-def extract_requirements(snapshot):
+def _extract_requirements(app_content):
 	"""Extract system requirements from raw API response. Parse the three OS specific
 	requirements fields for 'key: value' style requirements into a single dict.
 	Args:
-		snapshot (dict): raw contents of an API app description response.
+		app_content (dict): raw contents of an API app description response.
 	Return:
 		A dict of hardware category and value. Categories include components like
 		OS, Processor, Storage.
@@ -184,10 +186,10 @@ def extract_requirements(snapshot):
 
 			# The data type of the top level OS header is either a list if there's no data
 			# for this OS, or an object when it's not empty
-			if snapshot[header] == []:
+			if app_content[header] == []:
 				continue
 
-			soup = BeautifulSoup(snapshot[header].get(req_type, ""), "html.parser")
+			soup = BeautifulSoup(app_content[header].get(req_type, ""), "html.parser")
 			for li in soup.select("li"):
 				if ":" in li.text:
 					category = li.text.split(":")[0].rstrip(" *")
@@ -198,3 +200,24 @@ def extract_requirements(snapshot):
 					continue
 
 	return requirements_map
+
+def _extract_content_rating(app_content):
+	"""Extract system requirements from raw API response. Parse the three OS specific
+	requirements fields for 'key: value' style requirements into a single dict.
+	Args:
+		app_content (dict): raw contents of an API app description response.
+	Return:
+		A dict of hardware category and value. Categories include components like
+		OS, Processor, Storage.
+	"""
+	if not app_content["ratings"]:
+		return []
+
+	rating_providers = ("esrb", "pegi", "oflc", "cero", "kgrb")
+	ratings = [
+		app_content.get("ratings", {}).get(provider, {}).get("descriptors", "").replace("\r\n", " ")
+		for provider in rating_providers
+	]
+
+	# drop empty strings from providers not present for this app
+	return [ r for r in ratings if r ]

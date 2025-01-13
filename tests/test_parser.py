@@ -145,4 +145,64 @@ def test_requirements_parsing():
         },
     }
 
-    assert parser.extract_requirements(data) == expected
+    assert parser._extract_requirements(data) == expected
+
+def test_ratings_parsing():
+    """Test ratings parsing to a list."""
+
+    # Valid rating providers
+    data = {
+        "ratings": {
+            "esrb": {
+                "rating": "m",
+                "use_age_gate": "true",
+                "required_age": "17",
+                "descriptors": "Intense Violence\r\nBlood and Gore\r\nNudity\r\nMature Humor\r\nStrong Language\r\nStrong Sexual Content\r\nUse of Drugs and Alcohol"
+            },
+            "kgrb": {
+                "rating": "18",
+                "use_age_gate": "true",
+                "required_age": "18",
+                "descriptors": "Game Descriptive: Sexual Content, Violence, Inappropriate Language, Drug, Crime, Gambling \r\n\r\nTitle Name:"
+            },
+            "pegi": {
+                "rating": "18",
+                "descriptors": "Violence\r\nOnline Play,\r\nStrong Language",
+                "use_age_gate": "true",
+                "required_age": "17"
+            },
+            "usk": {
+                "rating": "18",
+                "use_age_gate": "true",
+                "required_age": "17"
+            }
+        }
+    }
+
+    expected = [
+        "Intense Violence Blood and Gore Nudity Mature Humor Strong Language Strong Sexual Content Use of Drugs and Alcohol",
+        "Violence Online Play, Strong Language",
+        "Game Descriptive: Sexual Content, Violence, Inappropriate Language, Drug, Crime, Gambling   Title Name:"
+    ]
+
+    assert parser._extract_content_rating(data) == expected
+
+    # Missing ratings
+    data = {
+        "ratings": None
+    }
+    assert parser._extract_content_rating(data) == []
+
+    # No valid providers
+    data = {
+        "ratings": {
+            "foo": {
+                "descriptors": "Intense Violence\r\nBlood and Gore"
+            },
+            "bar": {
+                "descriptors": "Game Descriptive: Sexual Content"
+            }
+        }
+    }
+
+    assert parser._extract_content_rating(data) == []
