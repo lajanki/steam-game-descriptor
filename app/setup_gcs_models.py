@@ -17,7 +17,6 @@ def setup():
 
     logger.info("Creating description model...")
     description_text = " ".join([item["detailed_description"] for item in source_data_list])
-
     t = trainer.Trainer(description_text, "description.pkl")
     t.run()
 
@@ -44,5 +43,14 @@ def setup():
         text_data = " ".join(extracted_requirement_map[key])
         t = trainer.Trainer(text_data, f"requirements_{key.replace(' ', '_')}.pkl")
         t.run()
+
+    logger.info("Creating ratings model...")
+    # join individual ratings within a single item
+    ratings = [ " ".join(item.get("ratings", [])) for item in source_data_list ]
+
+    # join ratings across all items
+    ratings_text = " ".join(ratings)
+    t = trainer.Trainer(ratings_text, "ratings.pkl")
+    t.run()
 
     logger.info("Models saved in gs://%s", utils.MODEL_BUCKET)
