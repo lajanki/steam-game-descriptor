@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
-from app import utils
+with patch("google.cloud.storage.Client"):
+    from app import utils
 
 
 def test_merge_requirements_list():

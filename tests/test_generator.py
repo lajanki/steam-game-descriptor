@@ -2,7 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-from app.generator import generator
+with patch("google.cloud.storage.Client"):
+    from app.generator import generator
 
 
 
