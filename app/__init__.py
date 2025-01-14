@@ -26,4 +26,6 @@ BASE = os.path.dirname(__file__)
 load_dotenv(".env.dev")
 
 # Load a pre-trained Spacy language model.
-nlp = spacy.load("en_core_web_md")
+# Disable specific pipeline component to speedup similarity inference 
+# https://spacy.io/usage/processing-pipelines#pipelines
+nlp = spacy.load("en_core_web_md", exclude=["ner", "parser"])
