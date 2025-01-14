@@ -23,6 +23,7 @@ class Generator:
 
 	def _load_model(self, name):
 		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, "models/" + name)
+		logger.info("Loaded model %s from %s", name, utils.MODEL_BUCKET)
 		return pickle.loads(model_data)
 
 	def generate(

@@ -134,14 +134,21 @@ def select_tags():
 
 def get_closest_word_match(context, choices):
     """Find the word in a list of choices that is semantically closest 
-    to key.
+    to it.
     Args:
         context (str): the word to find a match for
         choices (list): the list to look for the match
     Return:
         the matching word.
     """
-    return sorted(choices, key=lambda x: nlp(context).similarity(nlp(x)))[-1]
+    # Define a custom sort function; set an arbitrary fixed
+    # value for short words to save nlp inference delay.
+    def _similarity_key(item):
+        if len(item) < 4:
+            return -5
+        return nlp(context).similarity(nlp(item))
+
+    return sorted(choices, key=_similarity_key)[-1]
 
 def get_openai_secret():
     """Fetch OpenAI API key from Secret Manager."""
