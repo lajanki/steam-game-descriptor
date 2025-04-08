@@ -53,7 +53,7 @@ uv run flask -e .env.prod --app app.views:app run --debug
 
 ### Local maintenance tasks
 Some maintenance tasks can be run locally without the Flask webserver context with the helper 
-script `utils/tasks.py`. The include:
+script `tools/tasks.py`. The include:
 
 | Flag              | Description                                                    |
 |-------------------|----------------------------------------------------------------|
@@ -63,13 +63,13 @@ script `utils/tasks.py`. The include:
 
 To execute these tasks from the root folder, run with something like:
 ```shell
-uv run python -m utils.tasks --demo
+uv run python -m tools.tasks --demo
 ```
 
 By default, these will use dev models. In order to run against the production state, load the
 production environment with
 ```shell
-uv run dotenv -f .env.prod run python -m utils.tasks --demo
+uv run dotenv -f .env.prod run python -m tools.tasks --demo
 ```
 
 ## Unit tests
