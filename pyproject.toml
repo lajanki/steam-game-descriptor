@@ -1,0 +1,34 @@
+[project]
+name = "steam-game-descriptor"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "beautifulsoup4>=4.13.3",
+    "en-core-web-md",
+    "flask>=3.1.0",
+    "google-cloud-secret-manager>=2.23.2",
+    "google-cloud-storage>=3.1.0",
+    "gunicorn>=23.0.0",
+    "jsonschema>=4.23.0",
+    "openai>=1.71.0",
+    "pillow>=11.1.0",
+    "python-dotenv>=1.1.0",
+    "pyyaml>=6.0.2",
+    "spacy>=3.8.5",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-env>=1.1.5",
+]
+
+[tool.uv.sources]
+en-core-web-md = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl" }
+
+[tool.pytest.ini_options]
+env = [
+    "GOOGLE_CLOUD_PROJECT=''"
+]
