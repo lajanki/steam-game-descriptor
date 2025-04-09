@@ -15,6 +15,7 @@ from . import (
 
 
 app = Flask(__name__)
+app.config.from_prefixed_env()
 
 
 # Set the logging level to DEBUG if Flask is in debug mode.
@@ -28,7 +29,7 @@ app = Flask(__name__)
 
 # create DescriptionGenerator in the global namespace to limit
 # API calls
-generator = generate_description.DescriptionGenerator()
+generator = generate_description.DescriptionGenerator(app.config)
 
 
 @app.route("/")

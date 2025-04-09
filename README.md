@@ -27,13 +27,16 @@ Hosted on Google App Engine.
 
 
 ## Running locally
-Install Python packages with  
+The project is managed using `uv`.
+
+To setup a development environment with dependencies, run
 ```shell
-pip install -r requirements.txt
-```  
+uv sync
+```
+
 Then, run in localhost with
 ```shell
-flask --app app.views:app run --debug
+uv run flask --app app.views:app run --debug
 ```
 
 Maitenance requests for training new models can be tested locally by settings required headers with something like:
@@ -43,15 +46,27 @@ curl "127.0.0.1:5000/_parse_descriptions?batch_size=40" -H "X-Appengine-Cron: 1"
 for parsing a new batch of game descriptions from Steam Store.
 
 ### Running locally in production mode
-When run locally, all output is stored to separate dev Cloud Storage bucket by default. If needed, this can be overridden
-to use the production bucket by starting the Flask server with
+When run locally, text models will be loaded from (and saved to) a dedicated dev bucket in Cloud Storage.
+To run the app locally against production backend, override the environment with
 ```shell
-flask -e .env.prod --app app.views:app run --debug
+uv run flask -e .env.prod --app app.views:app run --debug
 ```
+
+### Enable semantic context similarity
+By default text generation is based on selecting a random successor from the model for each word generated.
+An optional semantic context can be enabled in which the most similar word is chosen if there are multiple
+to choose from.
+
+This is implemented via [spaCy](https://spacy.io/) NLP library, but does introduce a delay on text generation.
+To enable, set `FLASK_ENABLE_SEMANTIC_CONTEXT` environment variable:
+```shell
+FLASK_ENABLE_SEMANTIC_CONTEXT=1 uv run flask --app app.views:app run --debug
+```
+
 
 ### Local maintenance tasks
 Some maintenance tasks can be run locally without the Flask webserver context with the helper 
-script `utils/tasks.py`. The include:
+script `tools/tasks.py`. The include:
 
 | Flag              | Description                                                    |
 |-------------------|----------------------------------------------------------------|
@@ -61,19 +76,19 @@ script `utils/tasks.py`. The include:
 
 To execute these tasks from the root folder, run with something like:
 ```shell
-python -m utils.tasks --demo
+uv run python -m tools.tasks --demo
 ```
 
 By default, these will use dev models. In order to run against the production state, load the
 production environment with
 ```shell
-dotenv -f .env.prod run python -m utils.tasks --demo
+uv run dotenv -f .env.prod run python -m tools.tasks --demo
 ```
 
 ## Unit tests
 Unit tests can be run from the root folder with
 ```shell
-pytest
+uv run pytest
 ```
 
 ## Deploy to Google App Engine

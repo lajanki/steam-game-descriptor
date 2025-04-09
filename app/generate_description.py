@@ -1,6 +1,7 @@
 # Generate a randomized game description with a title and a list of features.
 
 import dataclasses
+import logging
 import random
 import re
 import string
@@ -8,6 +9,9 @@ from types import SimpleNamespace
 
 from app import data_files, utils, model_specs
 from app.generator import generator
+
+
+logger = logging.getLogger()
 
 
 class DescriptionGenerator():
@@ -20,8 +24,9 @@ class DescriptionGenerator():
 	 * developer name
 	"""
 
-	def __init__(self):
+	def __init__(self, config):
 		"""Load pre-trained generators for description and title."""
+		self.description_config = None
 		self.generators = SimpleNamespace(
 			description = generator.Generator("description.pkl"),
 			title = generator.Generator("title.pkl"),
@@ -39,10 +44,14 @@ class DescriptionGenerator():
 			)
 		)
 
+		self.ENABLE_SEMANTIC_CONTEXT = config.get("ENABLE_SEMANTIC_CONTEXT", False)
+		if self.ENABLE_SEMANTIC_CONTEXT:
+			logger.info("Semantic context enabled for description generation.")
+
 	def __call__(self):
 		"""Generate a description with random number of paragraphs and content types."""
 		# Randomize a new content config for each run
-		self.config = create_config()
+		self.description_config = create_description_config()
 		seeds = data_files.SEEDS
 		tags = utils.select_tags()
 
@@ -57,16 +66,18 @@ class DescriptionGenerator():
 
 		# Generate n paragraphs as main content
 		paragraphs = []
-		for _ in range(self.config.num_paragraphs):
+		for _ in range(self.description_config.num_paragraphs):
 			size = int(abs(random.gauss(15, 3)))
 			seed = random.choice(seeds["text"])
 
+			# Use the genre as context for the description if enabled
+			context = tags["genre"] if self.ENABLE_SEMANTIC_CONTEXT else None
 			paragraphs.append(
 				self.generators.description.generate(
 					seed=seed,
 					size=size,
 					complete_sentence=True,
-					context=tags["genre"]  # use the genre as context
+					context=context
 				)
 			)
 
@@ -77,7 +88,7 @@ class DescriptionGenerator():
 
 		# Repeat for sub sections if included in the config;
 		# 1 paragraph per section
-		for _ in range(self.config.num_subsections):
+		for _ in range(self.description_config.num_subsections):
 			seed = random.choice(seeds["headers"])
 			header = self.generators.description.generate(
 				seed=seed, size=3, continue_until_valid=True
@@ -86,10 +97,12 @@ class DescriptionGenerator():
 			
 			self.generators.description.ff_to_next_sentence()
 			size = int(abs(random.gauss(15, 3)))
+			context = header if self.ENABLE_SEMANTIC_CONTEXT else None
+
 			paragraph = self.generators.description.generate(
 				size=size,
 				complete_sentence=True,
-				context=header # use the section header as context
+				context=context
 			)
 
 			description.append({
@@ -99,7 +112,7 @@ class DescriptionGenerator():
 
 		# List of features
 		features = []
-		for _ in range(self.config.num_features):
+		for _ in range(self.description_config.num_features):
 			# set a shorthish upper bound
 			size = min(int(abs(random.gauss(12, 4))), 22)
 			features.append(
@@ -108,7 +121,7 @@ class DescriptionGenerator():
 
 		# Tagline
 		tagline = ""
-		if self.config.tagline:
+		if self.description_config.tagline:
 			tagline = self.generators.tagline.generate(size=4, complete_sentence=True)
 
 		# System requirements;
@@ -147,7 +160,7 @@ class DescriptionGenerator():
 		]
 
 		# add other categories only if specified in the config
-		if self.config.system_requirements.sound_card:
+		if self.description_config.system_requirements.sound_card:
 			system_requirements.append(
 				{
 					"name": "Sound Card",
@@ -157,7 +170,7 @@ class DescriptionGenerator():
 				}
 			)
 
-		if self.config.system_requirements.additional_notes:
+		if self.description_config.system_requirements.additional_notes:
 			system_requirements.append(
 				{
 					"name": "Additional Notes",
@@ -179,10 +192,10 @@ class DescriptionGenerator():
 		# return a json serializable dict
 		return dataclasses.asdict(description_model)
 
-def create_config():
-	"""Create a randomized config for which sections and how many to include
-	in the description.
-
+def create_description_config():
+	"""Create a randomized description config for what the generated content
+	should include.
+	
 	Main content should include either:
 		* main paragraph(s) and a number of subsections with headers, or
 		* main paragraph(s) and a list of features

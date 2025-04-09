@@ -36,7 +36,7 @@ class Generator:
 	):
 		"""Generates a string of size words by randomly selecting words from the successor dictionary using the
 		previous n-1 words as the key.
-		Arg:
+		Args:
 			seed (str): initial text to start generting from. If None, a random key is chosen from the model data
 			size (int): minimum number of words the text should contain.
 			complete_sentence (boolean): continue adding words past the specified minimum size until a punctuation
@@ -97,17 +97,28 @@ class Generator:
 		return self.cleanup(words)
 
 	def get_word(self, context=None):
-		"""Choose a random successor word from the model matching current key and 
-		update the key by joining the new word with the tail end of the old key.
+		"""Choose a random successor word from the model matching the current state key. 
+		Updates the state by joining the new word with the tail end of the old key.
+		Args:
+			context (str): optional word to use as context; used to look for semantically
+				similar words when multiple choices available. 
 		Return
-			a randomly chosen word
+			a randomly chosen successor
 		"""
-		if not self.model[self._key]:
+		try:
+			choices = self.model[self._key]
+		except KeyError:
+			# In rare cases the model may not contain the key.
+			# Choose a random key and try again.
 			logger.warning("No successor for %s. Choosing a new seed.", self._key)
 			self._key = random.choice(list(self.model))
+			choices = self.model[self._key]
 
-		choices = self.model[self._key]
-		if len(choices) > 1 and context:
+		# If there is only one choice, avoid 
+		# invoking random unnecessarily.
+		if len(choices) == 1:
+			next_word = next(iter(choices))
+		elif len(choices) > 1 and context:
 			next_word = utils.get_closest_word_match(context, choices)
 		else:
 			next_word = random.choice(list(self.model[self._key]))
