@@ -35,6 +35,7 @@ def download_from_gcs(bucket, path):
 
 def download_all_source_files():
     """Download all source files from the temp bucket.
+
     This will take a while depending on the number of files in the bucket.
     TODO: try concurrent download (to file) with transfer manager:
       https://cloud.google.com/python/docs/reference/storage/latest/google.cloud.storage.transfer_manager
@@ -53,8 +54,26 @@ def download_all_source_files():
         results.append(json.loads(data))
     
     logger.info("Loaded %d files from gs://%s/%s", count, TEMP_BUCKET, TEMP_BUCKET_PREFIX)
-
     return results
+
+def _download_all_model_files():
+    """Download all pre-trained model files from Cloud Storage.
+
+    Returns:
+        dict: A dictionary mapping model basenames to model data as bytes.
+    """
+
+    logger.info("Loading models from gs://%s/models", MODEL_BUCKET)
+
+    blobs = gcs_client.list_blobs(MODEL_BUCKET, prefix="models/", match_glob="**.pkl")
+    models = {}
+
+    for blob in blobs:
+        data = blob.download_as_bytes()
+        model_base_name = blob.name.split("/")[-1]
+        models[model_base_name] = data
+    
+    return models
 
 def get_text_file(filename):
     """Get contents from a text file."""
