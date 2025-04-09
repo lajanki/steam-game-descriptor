@@ -22,7 +22,7 @@ def test_generated_description_schema(mock_generator):
     in description_schema.json.
     """
     mock_generator().generate.return_value = ""
-    g = generate_description.DescriptionGenerator()
+    g = generate_description.DescriptionGenerator(MagicMock())
 
     with open("tests/description_schema.json") as f:
         schema = json.load(f)
@@ -60,7 +60,7 @@ def test_number_of_paragraphs_in_config():
     """
     # since the numbers are randomized, roll n dice rolls and validate counts
     for _ in range(10):
-        c = generate_description.create_config()
+        c = generate_description.create_description_config()
 
         assert c.num_subsections * c.num_features == 0
         assert max(c.num_subsections, c.num_features) > 0
