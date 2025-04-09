@@ -36,7 +36,7 @@ class Generator:
 	):
 		"""Generates a string of size words by randomly selecting words from the successor dictionary using the
 		previous n-1 words as the key.
-		Arg:
+		Args:
 			seed (str): initial text to start generting from. If None, a random key is chosen from the model data
 			size (int): minimum number of words the text should contain.
 			complete_sentence (boolean): continue adding words past the specified minimum size until a punctuation
