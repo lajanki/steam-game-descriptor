@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+from app import setup_gcs_models
+
 with patch("google.cloud.storage.Client"):
     from app import utils
 
@@ -85,7 +87,7 @@ def test_merge_requirements_list():
         ],
     }
 
-    assert utils.merge_requirements(requirements) == expected
+    assert setup_gcs_models._merge_requirements(requirements) == expected
 
 
 def test_ignore_non_whitelisted_caegories():
@@ -114,7 +116,7 @@ def test_ignore_non_whitelisted_caegories():
         "Additional Notes": []  # Missing category should default to an empty list
     }
 
-    assert utils.merge_requirements(requirements) == expected
+    assert setup_gcs_models._merge_requirements(requirements) == expected
 
 def test_merge_similar_categories():
     """Some categories can occur with different keys in different sources.
@@ -153,4 +155,4 @@ def test_merge_similar_categories():
         "Additional Notes": ["A powered computer recommended"]
     }
 
-    assert utils.merge_requirements(requirements) == expected
+    assert setup_gcs_models._merge_requirements(requirements) == expected

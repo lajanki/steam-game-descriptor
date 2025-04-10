@@ -23,5 +23,5 @@ def create_pos_tag_mapping():
 	for tag in d:
 		d[tag] = list(d[tag])
 		
-	with open(os.path.join("data", "pos_tags.json")) as f:
-		json.dump(d, f, separators=(',', ':'))
+	with open(os.path.join("app", "data", "pos_tags.json"), "w") as f:
+		json.dump(d, f, separators=(",", ":"))

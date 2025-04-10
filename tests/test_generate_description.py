@@ -14,6 +14,7 @@ def mock_generator():
     with patch("app.generator.generator.Generator") as MockGenerator:
         mock_gen_instance = MagicMock()
         MockGenerator.return_value = mock_gen_instance
+        #MockGenerator.side_effect = lambda model_data: mock_gen_instance
         yield MockGenerator
 
 
@@ -21,8 +22,10 @@ def test_generated_description_schema(mock_generator):
     """Generated description object should match the schema
     in description_schema.json.
     """
+    # Mock each generator to return a dummy string
     mock_generator().generate.return_value = ""
-    g = generate_description.DescriptionGenerator(MagicMock())
+    with patch("app.utils.gcs._download_all_model_files") as mock_download_all_model_files:
+        g = generate_description.DescriptionGenerator(MagicMock())
 
     with open("tests/description_schema.json") as f:
         schema = json.load(f)

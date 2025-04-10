@@ -7,8 +7,9 @@ import re
 import string
 from types import SimpleNamespace
 
-from app import data_files, utils, model_specs
+from app import model_specs
 from app.generator import generator
+from app.utils import gcs, common, data_files
 
 
 logger = logging.getLogger()
@@ -27,20 +28,22 @@ class DescriptionGenerator():
 	def __init__(self, config):
 		"""Load pre-trained generators for description and title."""
 		self.description_config = None
-		self.generators = SimpleNamespace(
-			description = generator.Generator("description.pkl"),
-			title = generator.Generator("title.pkl"),
-			feature = generator.Generator("feature.pkl"),
-			tagline = generator.Generator("tagline.pkl"),
+		model_data = gcs._download_all_model_files()
 
-			system_requirements = SimpleNamespace(
-				os = generator.Generator("requirements_OS.pkl"),
-				processor = generator.Generator("requirements_Processor.pkl"),
-				memory = generator.Generator("requirements_Memory.pkl"),
-				graphics = generator.Generator("requirements_Graphics.pkl"),
-				storage = generator.Generator("requirements_Storage.pkl"),
-				sound_card = generator.Generator("requirements_Sound_Card.pkl"),
-				additional_notes = generator.Generator("requirements_Additional_Notes.pkl")
+		self.generators = SimpleNamespace(
+			description=generator.Generator(model_data["description.pkl"]),
+			title=generator.Generator(model_data["title.pkl"]),
+			feature=generator.Generator(model_data["feature.pkl"]),
+			tagline=generator.Generator(model_data["tagline.pkl"]),
+
+			system_requirements=SimpleNamespace(
+				os=generator.Generator(model_data["requirements_OS.pkl"]),
+				processor=generator.Generator(model_data["requirements_Processor.pkl"]),
+				memory=generator.Generator(model_data["requirements_Memory.pkl"]),
+				graphics=generator.Generator(model_data["requirements_Graphics.pkl"]),
+				storage=generator.Generator(model_data["requirements_Storage.pkl"]),
+				sound_card=generator.Generator(model_data["requirements_Sound_Card.pkl"]),
+				additional_notes=generator.Generator(model_data["requirements_Additional_Notes.pkl"])
 			)
 		)
 
@@ -53,7 +56,7 @@ class DescriptionGenerator():
 		# Randomize a new content config for each run
 		self.description_config = create_description_config()
 		seeds = data_files.SEEDS
-		tags = utils.select_tags()
+		tags = common.select_tags()
 
 		description = []
 

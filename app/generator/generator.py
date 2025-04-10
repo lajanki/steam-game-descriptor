@@ -12,19 +12,14 @@ logger = logging.getLogger()
 class Generator:
 	"""The main function of a Generator is to create text from a pre-trained model.
 	Args:
-		model_name (str): name of the trained model to load from Cloud Storage.
+		model_data (dict): A dictionary containing the raw model data for each named model.
 	"""
 
-	def __init__(self, model_name):
-		self.model = self._load_model(model_name)
+	def __init__(self, model_data):
+		self.model = pickle.loads(model_data)
 
 		# Set the initial key to start the text generation to a random key in the model
 		self._key = random.choice(list(self.model))
-
-	def _load_model(self, name):
-		model_data = utils.download_from_gcs(utils.MODEL_BUCKET, "models/" + name)
-		logger.info("Loaded model %s from %s", name, utils.MODEL_BUCKET)
-		return pickle.loads(model_data)
 
 	def generate(
 		self,

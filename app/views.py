@@ -1,3 +1,5 @@
+# Flask routes
+
 from flask import (
     abort,
     Flask,
@@ -5,18 +7,17 @@ from flask import (
     render_template,
     request
 )
+
 from . import (
     generate_description,
     parser,
     setup_gcs_models,
-    create_image,
-    utils
+    create_image
 )
 
 
 app = Flask(__name__)
 app.config.from_prefixed_env()
-
 
 # Set the logging level to DEBUG if Flask is in debug mode.
 # Note that will affect lower level loggers as well, including 
@@ -27,9 +28,8 @@ app.config.from_prefixed_env()
 #     logger.setLevel(logging.DEBUG)
 
 
-# create DescriptionGenerator in the global namespace to limit
-# API calls
-generator = generate_description.DescriptionGenerator(app.config)
+# Initialize a generator instance for lazy loading
+generator = None
 
 
 @app.route("/")
@@ -41,6 +41,12 @@ def generate_game_description():
     """Endpoint for generating a description."""
     # Only respond, if a custom header was set
     if "X-Button-Callback" in request.headers:
+
+        # Instantiate a new generator if one doesn't already exist
+        global generator
+        if generator is None:
+            generator = generate_description.DescriptionGenerator(app.config)
+
         description = generator()
         return jsonify(description)
 
