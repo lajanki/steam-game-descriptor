@@ -28,7 +28,7 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup
 
-from app import utils, json_set_encoder
+from app.utils import json_set_encoder, gcs
 
 
 logger = logging.getLogger()
@@ -79,9 +79,9 @@ def upload_description_batch(batch_size=200):
 			ds = datetime.today().strftime("%Y-%m-%d")
 			name = data["name"].replace("/", "-") # Replace / to avoid issues with Cloud Storage prefixes
 			path = f"{TEMP_BUCKET_PREFIX}/{ds}/{name}.json"
-			utils.upload_to_gcs(
+			gcs.upload_to_gcs(
 				json.dumps(snapshot, cls=json_set_encoder.SetEncoder),
-				utils.TEMP_BUCKET,
+				gcs.TEMP_BUCKET,
 				path,
 				content_type="application/json",
 			)
@@ -90,7 +90,7 @@ def upload_description_batch(batch_size=200):
 	logger.info(
 		"Succesfully uploaded %s descriptions to %s/%s",
 		success,
-		utils.TEMP_BUCKET,
+		gcs.TEMP_BUCKET,
 		TEMP_BUCKET_PREFIX,
 	)
 

@@ -24,7 +24,7 @@ def test_generated_description_schema(mock_generator):
     """
     # Mock each generator to return a dummy string
     mock_generator().generate.return_value = ""
-    with patch("app.utils._download_all_model_files") as mock_download_all_model_files:
+    with patch("app.utils.gcs._download_all_model_files") as mock_download_all_model_files:
         g = generate_description.DescriptionGenerator(MagicMock())
 
     with open("tests/description_schema.json") as f:

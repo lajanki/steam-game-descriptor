@@ -7,8 +7,9 @@ import re
 import string
 from types import SimpleNamespace
 
-from app import data_files, utils, model_specs
+from app import model_specs
 from app.generator import generator
+from app.utils import gcs, common, data_files
 
 
 logger = logging.getLogger()
@@ -27,7 +28,7 @@ class DescriptionGenerator():
 	def __init__(self, config):
 		"""Load pre-trained generators for description and title."""
 		self.description_config = None
-		model_data = utils._download_all_model_files()
+		model_data = gcs._download_all_model_files()
 
 		self.generators = SimpleNamespace(
 			description=generator.Generator(model_data["description.pkl"]),
@@ -55,7 +56,7 @@ class DescriptionGenerator():
 		# Randomize a new content config for each run
 		self.description_config = create_description_config()
 		seeds = data_files.SEEDS
-		tags = utils.select_tags()
+		tags = common.select_tags()
 
 		description = []
 

@@ -9,8 +9,7 @@ from . import (
     generate_description,
     parser,
     setup_gcs_models,
-    create_image,
-    utils
+    create_image
 )
 
 
