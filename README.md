@@ -65,25 +65,22 @@ FLASK_ENABLE_SEMANTIC_CONTEXT=1 uv run flask --app app.views:app run --debug
 
 
 ### Local maintenance tasks
-Some maintenance tasks can be run locally without the Flask webserver context with the helper 
-script `tools/tasks.py`. The include:
+Certain maintenance tasks can be run locally without the webserver context.
+These include:
 
-| Flag              | Description                                                    |
-|-------------------|----------------------------------------------------------------|
-| `--demo`            | Generate a sample game description in json format.             |
-| `--get-model-stats` | Show performance statistics for the current description model. |
-| `--train`           | Train new models and store to bucket.                          |
+| Command              | Description                                                  |
+|------------------- |----------------------------------------------------------------|
+| `demo`             | Generate a sample game description in JSON format.             |
+| `show-model-stats` | Show performance statistics for the current description model. |
+| `train`            | Train new models and store to Cloud Storage bucket.            |
+| `create-pos-map`   | Download nltk part-of-speech map as JSON file. Requires additional nltk library setup. |
+
 
 To execute these tasks from the root folder, run with something like:
 ```shell
-uv run python -m tools.tasks --demo
+uv run flask --app app.cli:app task demo
 ```
 
-By default, these will use dev models. In order to run against the production state, load the
-production environment with
-```shell
-uv run dotenv -f .env.prod run python -m tools.tasks --demo
-```
 
 ## Unit tests
 Unit tests can be run from the root folder with

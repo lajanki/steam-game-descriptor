@@ -1,3 +1,6 @@
+# Flask CLI commands for manual maintenance tasks
+
+
 import json
 
 from flask import Flask
@@ -10,7 +13,6 @@ from app.tools import nltk_pos_tag_download, get_model_stats
 app = Flask(__name__)
 app.config.from_prefixed_env()
 
-## Flask CLI commands for manual maintenance tasks
 task_cli = AppGroup("task")
 app.cli.add_command(task_cli)
 
