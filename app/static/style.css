@@ -84,14 +84,16 @@ div.spinner-border {
 
 #left-margin {
 	background-color: #1b2838;
-	width: 20%;
-	height: 100vh;
+	min-height: 100vh;
+	position: sticky;
+	top: 0;
 }
 
 #right-margin {
 	background-color: #1b2838;
-	width: 20%;
-	height: 100vh;
+	min-height: 100vh;
+	position: sticky;
+	top: 0;
 }
 
 #content {
