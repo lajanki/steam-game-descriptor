@@ -47,12 +47,14 @@
 						// Hide description content and display the loader
 						$("#loader").show();
 						$(".clearable").text("");
+						$("#system_requirements_container").hide();
 					},
 					dataType: "json",
 					url: $SCRIPT_ROOT + "/_generate",
 					success: function(data) {
 						// Set description content and hide loader
 						$("#loader").hide();
+						$("#system_requirements_container").show();
 
 						// main content
 						$("#description").append("<h2>" + data.description[0].title + "</h2>");
@@ -60,7 +62,7 @@
 
 						// tagline (if present)
 						if (data.tagline) {
-							$("#tagline").append(`<i>"${data.tagline}"</i>`);
+							$("#tagline").append(`<div class="game-tagline">"${data.tagline}"</div>`);
 						}
 
 						// add remaining description paragraphs (if any)
@@ -82,6 +84,7 @@
 
 						var developer = "Developer: " + data.developer
 						$("#developer > span").text(developer);
+						$("#developer").show();
 
 						// tags; create <span> element for each tag
 						// (1 genre tag and 0-n context and extra tags)
@@ -100,7 +103,16 @@
 					error: function(jqXHR, textStatus, errorThrown) {
 						$("#loader").hide();
 						$(".clearable").text("");
-						$("#description").html("<h1>Something went wrong, try again</h1>");
+						$("#developer").hide();
+
+						$("#description").html(`
+							<div class="error-container">
+								<div class="error-icon">❌</div>
+								<h1 class="error-title">Something went wrong</h1>
+								<p class="error-message">There was a problem generating your game description.</p>
+								<p>Please try again or check back later.</p>
+							</div>
+						`);
 					}
 				});
 				return false;
@@ -119,8 +131,15 @@
 			<!-- Middle section for content -->
 			<div id="content" class="col-xs-12 col-md-8">
 				<div class="page-header">
-				 	<h1>Steam Game Descriptions</h1> 
-				 	<p>Game descriptions modelled after Steam store as written by a random text generator</p>
+					<div class="header-content">
+						<div class="header-icon">
+							<img src="{{ url_for('static', filename='img/steamy_pipe_logo_round.png') }}" alt="Logo">
+						</div>
+						<div class="header-text">
+							<h1>Game Descriptions</h1> 
+							<p>Game descriptions modelled after Steam store written by a text generator</p>
+						</div>
+					</div>
 				</div>
 
 				<!-- Container for the description and a loader div -->
@@ -151,8 +170,6 @@
 						</div>
 					</div>
 				</div>
-
-
 			</div>
 
 			<!-- right margin -->
