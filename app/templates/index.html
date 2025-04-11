@@ -84,6 +84,7 @@
 
 						var developer = "Developer: " + data.developer
 						$("#developer > span").text(developer);
+						$("#developer").show();
 
 						// tags; create <span> element for each tag
 						// (1 genre tag and 0-n context and extra tags)
@@ -102,6 +103,8 @@
 					error: function(jqXHR, textStatus, errorThrown) {
 						$("#loader").hide();
 						$(".clearable").text("");
+						$("#developer").hide();
+
 						$("#description").html(`
 							<div class="error-container">
 								<div class="error-icon">❌</div>
