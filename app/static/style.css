@@ -261,5 +261,38 @@ ul#system_requirements {
 	padding: 0;
 	padding-left: 2em;
 	text-indent: -2em;
-  }
+}
+
+.error-container {
+  background-color: rgba(70, 33, 33, 0.8);
+  border-radius: 8px;
+  border: 1px solid #cc3333;
+  box-shadow: 0 0 15px rgba(204, 51, 51, 0.4);
+  color: #fff;
+  text-align: center;
+  padding: 25px;
+  margin: 30px auto;
+  max-width: 80%;
+}
+
+.error-icon {
+  font-size: 42px;
+  margin-bottom: 15px;
+  color: #ff6b6b;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.6);
+}
+
+.error-title {
+  font-size: 24px;
+  color: #ff9999;
+  margin-bottom: 15px;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(255, 153, 153, 0.5);
+}
+
+.error-message {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #f0d0d0;
+}
 

@@ -102,7 +102,14 @@
 					error: function(jqXHR, textStatus, errorThrown) {
 						$("#loader").hide();
 						$(".clearable").text("");
-						$("#description").html("<h1>Something went wrong, try again</h1>");
+						$("#description").html(`
+							<div class="error-container">
+								<div class="error-icon">❌</div>
+								<h1 class="error-title">Something went wrong</h1>
+								<p class="error-message">There was a problem generating your game description.</p>
+								<p>Please try again or check back later.</p>
+							</div>
+						`);
 					}
 				});
 				return false;
