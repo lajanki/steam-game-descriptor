@@ -107,7 +107,7 @@ class Generator:
 		except KeyError:
 			# In rare cases the model may not contain the key.
 			# Choose a random key and try again.
-			logger.warning("No successor for %s. Choosing a new seed.", self._key)
+			logger.warning("No successor for %s. Model: %s. Choosing a new seed.", self._key, self.name)
 			self._key = random.choice(list(self.model))
 			choices = self.model[self._key]
 
@@ -122,6 +122,12 @@ class Generator:
 
 		# Update current key: shift to the right once and add the chosen word
 		self._key = (*self._key[1:], next_word)
+
+		# If the new key is not in the model, choose a random key.
+		# TODO: Find out why this happens.
+		if self._key not in self.model:
+			logger.warning("Key %s not found in model %s. Choosing a new seed.", self._key, self.name)
+			self._key = random.choice(list(self.model))
 
 		return next_word
 
