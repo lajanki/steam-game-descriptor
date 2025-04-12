@@ -14,7 +14,7 @@ def setup():
     Existing models will be overwritten.
     """
     logger.info("Downloading source files... ")
-    source_data_list = utils.common.download_all_source_files()
+    source_data_list = utils.gcs.download_all_source_files()
 
     logger.info("Creating description model...")
     description_text = " ".join([item["detailed_description"] for item in source_data_list])
@@ -27,12 +27,12 @@ def setup():
     t.run()
 
     logger.info("Creating feature model...")
-    feature_text = utils.get_text_file(os.path.join(BASE, "data", "features.txt"))
+    feature_text = utils.common.get_text_file(os.path.join(BASE, "data", "features.txt"))
     t = trainer.Trainer(feature_text, "feature.pkl")
     t.run()
 
     logger.info("Creating tagline model...")
-    taglines_text = utils.get_text_file(os.path.join(BASE, "data", "taglines.txt"))
+    taglines_text = utils.common.get_text_file(os.path.join(BASE, "data", "taglines.txt"))
     t = trainer.Trainer(taglines_text, "tagline.pkl")
     t.run()
 
@@ -54,7 +54,7 @@ def setup():
     t = trainer.Trainer(ratings_text, "ratings.pkl")
     t.run()
 
-    logger.info("Models saved in gs://%s", utils.MODEL_BUCKET)
+    logger.info("Models saved in gs://%s", utils.gcs.MODEL_BUCKET)
 
 def _merge_requirements(source_data_list):
     """Merge a list of requirement dicts.
