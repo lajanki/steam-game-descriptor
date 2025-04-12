@@ -13,10 +13,12 @@ class Generator:
 	"""The main function of a Generator is to create text from a pre-trained model.
 	Args:
 		model_data (dict): A dictionary containing the raw model data for each named model.
+		name (str): Optional name for the Generator instance.
 	"""
 
-	def __init__(self, model_data):
+	def __init__(self, model_data, name=None):
 		self.model = pickle.loads(model_data)
+		self.name = name
 
 		# Set the initial key to start the text generation to a random key in the model
 		self._key = random.choice(list(self.model))
@@ -116,7 +118,7 @@ class Generator:
 		elif len(choices) > 1 and context:
 			next_word = utils.get_closest_word_match(context, choices)
 		else:
-			next_word = random.choice(list(self.model[self._key]))
+			next_word = random.choice(list(choices))
 
 		# Update current key: shift to the right once and add the chosen word
 		self._key = (*self._key[1:], next_word)
