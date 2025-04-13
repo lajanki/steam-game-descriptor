@@ -51,7 +51,9 @@ class Trainer():
 			key = tuple(ngram[:-1])  # convert to tuple for a hashable dictionary key
 			data[key].add(ngram[-1])
 
-		self.model = data
+		# Convert back to a regular dictionary to prevent
+		# silently adding new keys during lookup.
+		self.model = dict(data)
 
 	def create_ngrams(self):
 		"""Generator for creating ngrams from the training data. For instance,
