@@ -4,7 +4,7 @@ import logging
 import pickle
 import sys
 
-from app import utils
+from app.utils import gcs
 
 
 logger = logging.getLogger()
@@ -39,7 +39,7 @@ class Trainer():
 		self.compute_statistics()
 
 		model = pickle.dumps(self.model)
-		utils.upload_to_gcs(model, utils.MODEL_BUCKET, "models/" + self.filename)
+		gcs.upload_to_gcs(model, gcs.MODEL_BUCKET, "models/" + self.filename)
 
 	def train(self):
 		"""Train the model given input text. Splits the text into ngrams and store as a dict of (n-1)-gram keys
@@ -51,7 +51,9 @@ class Trainer():
 			key = tuple(ngram[:-1])  # convert to tuple for a hashable dictionary key
 			data[key].add(ngram[-1])
 
-		self.model = data
+		# Convert back to a regular dictionary to prevent
+		# silently adding new keys during lookup.
+		self.model = dict(data)
 
 	def create_ngrams(self):
 		"""Generator for creating ngrams from the training data. For instance,
@@ -75,12 +77,13 @@ class Trainer():
 		 * unit ngram rate: the % of keys having degree 1
 		 * size in megabytes
 		"""
+		size = len(self.model)
 		degrees = [ len(self.model[key]) for key in self.model ]
 		median = statistics.median(degrees)
 		units = degrees.count(1) / len(degrees)
 		empty = degrees.count(0)
 		mb_size = sys.getsizeof(self.model) / 10**6
 
-		logger.info("Model statistics: median degree: %s, unit ngram rate: %.2f, size: %.2fMB", median, units, mb_size)
+		logger.info("Model statistics: total keys: %d, median degree: %s, unit ngram rate: %.2f, size: %.2fMB", size, median, units, mb_size)
 		if empty:
 			logging.warning("Detected %d keys wihtout successors", empty)

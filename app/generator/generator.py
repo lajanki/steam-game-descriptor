@@ -13,10 +13,12 @@ class Generator:
 	"""The main function of a Generator is to create text from a pre-trained model.
 	Args:
 		model_data (dict): A dictionary containing the raw model data for each named model.
+		name (str): Optional name for the Generator instance.
 	"""
 
-	def __init__(self, model_data):
+	def __init__(self, model_data, name=None):
 		self.model = pickle.loads(model_data)
+		self.name = name
 
 		# Set the initial key to start the text generation to a random key in the model
 		self._key = random.choice(list(self.model))
@@ -105,7 +107,7 @@ class Generator:
 		except KeyError:
 			# In rare cases the model may not contain the key.
 			# Choose a random key and try again.
-			logger.warning("No successor for %s. Choosing a new seed.", self._key)
+			logger.warning("No successor for %s. Model: %s. Choosing a new seed.", self._key, self.name)
 			self._key = random.choice(list(self.model))
 			choices = self.model[self._key]
 
@@ -116,10 +118,16 @@ class Generator:
 		elif len(choices) > 1 and context:
 			next_word = utils.get_closest_word_match(context, choices)
 		else:
-			next_word = random.choice(list(self.model[self._key]))
+			next_word = random.choice(list(choices))
 
 		# Update current key: shift to the right once and add the chosen word
 		self._key = (*self._key[1:], next_word)
+
+		# If the new key is not in the model, choose a random key.
+		# TODO: Find out why this happens.
+		if self._key not in self.model:
+			logger.warning("Key %s not found in model %s. Choosing a new seed.", self._key, self.name)
+			self._key = random.choice(list(self.model))
 
 		return next_word
 

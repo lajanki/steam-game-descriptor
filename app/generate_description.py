@@ -26,24 +26,30 @@ class DescriptionGenerator():
 	"""
 
 	def __init__(self, config):
-		"""Load pre-trained generators for description and title."""
+		"""Create generators for each description component.
+		Model content is expected to be available in Cloud Storage.
+		"""
 		self.description_config = None
 		model_data = gcs._download_all_model_files()
 
+		# Helper function to create a Generator instance with its identity
+		def create_generator(key):
+			return generator.Generator(model_data[key + ".pkl"], name=key)
+
 		self.generators = SimpleNamespace(
-			description=generator.Generator(model_data["description.pkl"]),
-			title=generator.Generator(model_data["title.pkl"]),
-			feature=generator.Generator(model_data["feature.pkl"]),
-			tagline=generator.Generator(model_data["tagline.pkl"]),
+			description=create_generator("description"),
+			title=create_generator("title"),
+			feature=create_generator("feature"),
+			tagline=create_generator("tagline"),
 
 			system_requirements=SimpleNamespace(
-				os=generator.Generator(model_data["requirements_OS.pkl"]),
-				processor=generator.Generator(model_data["requirements_Processor.pkl"]),
-				memory=generator.Generator(model_data["requirements_Memory.pkl"]),
-				graphics=generator.Generator(model_data["requirements_Graphics.pkl"]),
-				storage=generator.Generator(model_data["requirements_Storage.pkl"]),
-				sound_card=generator.Generator(model_data["requirements_Sound_Card.pkl"]),
-				additional_notes=generator.Generator(model_data["requirements_Additional_Notes.pkl"])
+				os=create_generator("requirements_OS"),
+				processor=create_generator("requirements_Processor"),
+				memory=create_generator("requirements_Memory"),
+				graphics=create_generator("requirements_Graphics"),
+				storage=create_generator("requirements_Storage"),
+				sound_card=create_generator("requirements_Sound_Card"),
+				additional_notes=create_generator("requirements_Additional_Notes")
 			)
 		)
 
