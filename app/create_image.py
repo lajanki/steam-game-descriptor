@@ -24,19 +24,20 @@ def upload_screenshot():
 
     # get list of tags
     # generate image
-    # upload (to temp bucket?) /img/<genre>/<primary_tag>/<secondary_tag_1>_<secondary_tag_2>_<timestamp>.png
+    # upload (to temp bucket?) /img/<genre>/<primary_tag>/<timestamp>.png
     tags = utils.select_tags()
     genre = tags["genre"]
     primary_tag = tags["prompt"][0]
-
     image_fp = create_image(tags)
 
+    gcs_path = f"img/{genre}/{primary_tag}/{int(time.time())}.png"
     utils.upload_to_gcs(
         image_fp.read(),
         utils.CACHE_BUCKET,
-        f"img/{genre}/{primary_tag}/{int(time.time())}.png",
+        gcs_path,
         content_type="image/png"
     )
+    print(f"Image uploaded to {gcs_path}.")
 
 
 def create_image(tags):
@@ -50,13 +51,10 @@ def create_image(tags):
         api_key=utils.get_openai_secret()
     )
 
-    prompt = """
-    Create a screenshot for a {} video game described by the following attributes:
-    {}
-    """.format(
-        tags["genre"],
-        "".join([ " - " + t + "\n" for t in tags["context"]])
-    ).strip()
+    prompt = f"""
+        Create a screenshot for a {tags['genre']} video game described by the following attributes: 
+        {''.join([ ' - ' + t + '\n' for t in tags['context']])}
+    """.strip()
 
     response = client.images.generate(
         prompt=prompt,
