@@ -22,14 +22,14 @@ def upload_screenshot():
     primary_tag = tags["context"][0]
     image_fp = create_image(tags)
 
-    gcs_path = f"img/{genre}/{primary_tag}/{int(time.time())}.png"
-    gcs_path.upload_to_gcs(
+    prefix = f"{genre}/{primary_tag}/{int(time.time())}.png"
+    gcs.upload_to_gcs(
         image_fp.read(),
-        gcs.CACHE_BUCKET,
-        gcs_path,
+        gcs.IMG_BUCKET,
+        prefix,
         content_type="image/png"
     )
-    print(f"Image uploaded to {gcs_path}.")
+    print(f"Image uploaded to gs://{gcs.IMG_BUCKET}/{prefix}.")
 
 
 def create_image(tags):
