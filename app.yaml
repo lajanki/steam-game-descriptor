@@ -11,3 +11,4 @@ env_variables:
   MODEL_BUCKET: prod_steam_game_descriptor_data
   TEMP_BUCKET: prod_temp_lf345f
   TEMP_BUCKET_PREFIX: steam_game_descriptor/v2/descriptions
+  IMG_BUCKET: prod_steam_game_descriptor_img

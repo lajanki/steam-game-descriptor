@@ -25,7 +25,7 @@ def select_tags():
     genre, genre_tags = random.choice(list(GENRES["Primary"].items()))
 
     # initialize tags with the genre and 1 matching primary tag
-    wrapper_tags = {
+    tags_envelope = {
         "genre": genre,
         "context": [random.choice(genre_tags)],
         "extra": []
@@ -33,20 +33,20 @@ def select_tags():
 
     # optionally add 1 common context tag for image prompt
     if random.random() <= 0.5:
-         wrapper_tags["context"].append(random.choice(GENRES["Common"]))
+         tags_envelope["context"].append(random.choice(GENRES["Common"]))
 
     # add 0-2 more text-only tags
     r = random.random()
     if r < 0.2:
-        return wrapper_tags 
+        return tags_envelope 
 
     elif r < 0.72:
-        wrapper_tags["extra"].append(random.choice(GENRES["Other"]))
+        tags_envelope["extra"].append(random.choice(GENRES["Other"]))
 
     else:
-        wrapper_tags["extra"].extend(random.choices(GENRES["Other"], k=2))
+        tags_envelope["extra"].extend(random.choices(GENRES["Other"], k=2))
 
-    return wrapper_tags
+    return tags_envelope
 
 def get_closest_word_match(context, choices):
     """Find the word in a list of choices that is semantically closest 
@@ -69,5 +69,7 @@ def get_closest_word_match(context, choices):
 def get_openai_secret():
     """Fetch OpenAI API key from Secret Manager."""
     client = secretmanager.SecretManagerServiceClient()
-    response = client.access_secret_version(name="projects/webhost-common/secrets/steam-game-descriptor-openai-key/versions/latest")
+    response = client.access_secret_version(
+        name="projects/webhost-common/secrets/steam-game-descriptor-openai-key/versions/latest"
+    )
     return response.payload.data.decode()

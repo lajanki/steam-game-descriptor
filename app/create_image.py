@@ -8,32 +8,24 @@ from openai import OpenAI
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
-from app import utils
+from app.utils import gcs, common
 
-
-
-"""
-Create a screenshot for a video game with the following attributes:
- - 6 degrees of freedom
- - flying
- - combat
- - early 2010s
-"""
 
 def upload_screenshot():
-
-    # get list of tags
-    # generate image
-    # upload (to temp bucket?) /img/<genre>/<primary_tag>/<timestamp>.png
-    tags = utils.select_tags()
+    """Generate a screenshot and upload to Cloud Storage.
+    
+    Use randomized tags as prompt attributes and as remote
+    storage prefix.
+    """
+    tags = common.select_tags()
     genre = tags["genre"]
-    primary_tag = tags["prompt"][0]
+    primary_tag = tags["context"][0]
     image_fp = create_image(tags)
 
     gcs_path = f"img/{genre}/{primary_tag}/{int(time.time())}.png"
-    utils.upload_to_gcs(
+    gcs_path.upload_to_gcs(
         image_fp.read(),
-        utils.CACHE_BUCKET,
+        gcs.CACHE_BUCKET,
         gcs_path,
         content_type="image/png"
     )
@@ -48,12 +40,12 @@ def create_image(tags):
             to be stored as metadata.
     """
     client = OpenAI(
-        api_key=utils.get_openai_secret()
+        api_key=common.get_openai_secret()
     )
 
     prompt = f"""
         Create a screenshot for a {tags['genre']} video game described by the following attributes: 
-        {''.join([ ' - ' + t + '\n' for t in tags['context']])}
+        {', '.join(tags['context'])}
     """.strip()
 
     response = client.images.generate(
@@ -64,9 +56,6 @@ def create_image(tags):
     )
     image_response_data = response.data[0].b64_json
     image_bytes = base64.b64decode(image_response_data)
-
-    # with open("image.png", "wb") as f:
-    # 	f.write(image_bytes)
 
     # Create an in-memory file object for manipulating metadata with PIL
     image_fp = BytesIO(image_bytes)
