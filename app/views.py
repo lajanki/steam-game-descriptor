@@ -76,12 +76,11 @@ def parse_descriptions():
 
     abort(500, "Bad request")
 
-# DISABLED: to be activates once full screenshot support ready to be published
-# @app.route("/_generate_image")
-# def generate_image():
-#     """Generate a screenshot and upload to Cloud Storage bucket."""
-#     if "X-Appengine-Cron" in request.headers:
-#         create_image.upload_screenshot()
-#         return "OK\n", 200
+@app.route("/_generate_image")
+def generate_image():
+    """Generate a screenshot and upload to Cloud Storage bucket."""
+    if "X-Appengine-Cron" in request.headers:
+        create_image.upload_screenshot()
+        return "OK\n", 200
 
-#     abort(500, "Bad request")
+    abort(500, "Bad request")

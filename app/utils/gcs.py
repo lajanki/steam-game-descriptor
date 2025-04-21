@@ -12,7 +12,7 @@ logger = logging.getLogger()
 MODEL_BUCKET = os.environ["MODEL_BUCKET"]
 TEMP_BUCKET = os.environ["TEMP_BUCKET"]
 TEMP_BUCKET_PREFIX = os.environ["TEMP_BUCKET_PREFIX"]
-CACHE_BUCKET = "dev_steam_game_descriptor_cache" # TODO
+IMG_BUCKET = os.environ["IMG_BUCKET"]
 
 gcs_client = storage.Client()
 

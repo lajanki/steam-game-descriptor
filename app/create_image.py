@@ -8,35 +8,28 @@ from openai import OpenAI
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
-from app import utils
+from app.utils import gcs, common
 
-
-
-"""
-Create a screenshot for a video game with the following attributes:
- - 6 degrees of freedom
- - flying
- - combat
- - early 2010s
-"""
 
 def upload_screenshot():
-
-    # get list of tags
-    # generate image
-    # upload (to temp bucket?) /img/<genre>/<primary_tag>/<secondary_tag_1>_<secondary_tag_2>_<timestamp>.png
-    tags = utils.select_tags()
+    """Generate a screenshot and upload to Cloud Storage.
+    
+    Use randomized tags as prompt attributes and as remote
+    storage prefix.
+    """
+    tags = common.select_tags()
     genre = tags["genre"]
-    primary_tag = tags["prompt"][0]
-
+    primary_tag = tags["context"][0]
     image_fp = create_image(tags)
 
-    utils.upload_to_gcs(
+    prefix = f"{genre}/{primary_tag}/{int(time.time())}.png"
+    gcs.upload_to_gcs(
         image_fp.read(),
-        utils.CACHE_BUCKET,
-        f"img/{genre}/{primary_tag}/{int(time.time())}.png",
+        gcs.IMG_BUCKET,
+        prefix,
         content_type="image/png"
     )
+    print(f"Image uploaded to gs://{gcs.IMG_BUCKET}/{prefix}.")
 
 
 def create_image(tags):
@@ -47,16 +40,13 @@ def create_image(tags):
             to be stored as metadata.
     """
     client = OpenAI(
-        api_key=utils.get_openai_secret()
+        api_key=common.get_openai_secret()
     )
 
-    prompt = """
-    Create a screenshot for a {} video game described by the following attributes:
-    {}
-    """.format(
-        tags["genre"],
-        "".join([ " - " + t + "\n" for t in tags["context"]])
-    ).strip()
+    prompt = f"""
+        Create a screenshot for a {tags['genre']} video game described by the following attributes: 
+        {', '.join(tags['context'])}
+    """.strip()
 
     response = client.images.generate(
         prompt=prompt,
@@ -66,9 +56,6 @@ def create_image(tags):
     )
     image_response_data = response.data[0].b64_json
     image_bytes = base64.b64decode(image_response_data)
-
-    # with open("image.png", "wb") as f:
-    # 	f.write(image_bytes)
 
     # Create an in-memory file object for manipulating metadata with PIL
     image_fp = BytesIO(image_bytes)
