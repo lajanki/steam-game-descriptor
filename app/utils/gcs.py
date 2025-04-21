@@ -58,9 +58,8 @@ def _download_all_model_files():
     Returns:
         dict: A dictionary mapping model basenames to model data as bytes.
     """
-
     logger.info("Loading models from gs://%s/models", MODEL_BUCKET)
-
+    
     blobs = gcs_client.list_blobs(MODEL_BUCKET, prefix="models/", match_glob="**.pkl")
     models = {}
 
@@ -70,3 +69,12 @@ def _download_all_model_files():
         models[model_base_name] = data
     
     return models
+
+def list_image_bucket():
+    """List all blobs in the image bucket.
+    Return:
+        a list of blobs
+    """
+
+    # Return a list to choose a random element from
+    return list(gcs_client.list_blobs(IMG_BUCKET))

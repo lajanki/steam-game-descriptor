@@ -1,4 +1,5 @@
 # Flask routes
+import random
 
 from flask import (
     abort,
@@ -14,6 +15,8 @@ from . import (
     setup_gcs_models,
     create_image
 )
+from app.utils import gcs
+
 
 
 app = Flask(__name__)
@@ -28,8 +31,9 @@ app.config.from_prefixed_env()
 #     logger.setLevel(logging.DEBUG)
 
 
-# Initialize a generator instance for lazy loading
+# Initialize global variables for lazy loading
 generator = None
+screenshot_pool = None
 
 
 @app.route("/")
@@ -43,11 +47,17 @@ def generate_game_description():
     if "X-Button-Callback" in request.headers:
 
         # Instantiate a new generator if one doesn't already exist
-        global generator
+        global generator, screenshot_pool
         if generator is None:
             generator = generate_description.DescriptionGenerator(app.config)
+            screenshot_pool = gcs.list_image_bucket()
 
         description = generator()
+
+        # Select a screenshot and add it to the generated description
+        screenshot = random.choice(screenshot_pool)
+        description["screenshot"] = screenshot.public_url
+
         return jsonify(description)
 
     abort(500, "Bad request")
