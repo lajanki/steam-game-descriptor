@@ -83,7 +83,7 @@ class DescriptionGenerator():
 			seed = random.choice(seeds["text"])
 
 			# Use the genre as context for the description if enabled
-			context = tags["genre"] if self.ENABLE_SEMANTIC_CONTEXT else None
+			context = tags.genre if self.ENABLE_SEMANTIC_CONTEXT else None
 			paragraphs.append(
 				self.generators.description.generate(
 					seed=seed,

@@ -5,7 +5,7 @@ import random
 from google.cloud import secretmanager
 
 from app.utils.data_files import GENRES
-from app import nlp
+from app import nlp, model_specs
 
 
 def get_text_file(filename):
@@ -20,7 +20,7 @@ def select_tags():
      * 1-2 genre dependant tags to be used as context for text and image generation
      * 0-2 additional tags to be used as display only
     Return:
-        a dict of the differetn types of tags
+        a TagSet instance with the selected tags.
     """
     genre, genre_tags = random.choice(list(GENRES["Primary"].items()))
 
@@ -46,7 +46,7 @@ def select_tags():
     else:
         tags_envelope["extra"].extend(random.choices(GENRES["Other"], k=2))
 
-    return tags_envelope
+    return model_specs.TagSet(**tags_envelope)
 
 def get_closest_word_match(context, choices):
     """Find the word in a list of choices that is semantically closest 

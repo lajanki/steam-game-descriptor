@@ -1,5 +1,4 @@
 # Flask routes
-import random
 
 from flask import (
     abort,
@@ -15,8 +14,6 @@ from . import (
     setup_gcs_models,
     create_image
 )
-from app.utils import gcs
-
 
 
 app = Flask(__name__)

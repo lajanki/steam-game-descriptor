@@ -18,11 +18,9 @@ def upload_screenshot():
     storage prefix.
     """
     tags = common.select_tags()
-    genre = tags["genre"]
-    primary_tag = tags["context"][0]
     image_fp = create_image(tags)
 
-    prefix = f"{genre}/{primary_tag}/{int(time.time())}.png"
+    prefix = f"{tags.genre}/{tags.context[0]}/{int(time.time())}.png"
     gcs.upload_to_gcs(
         image_fp.read(),
         gcs.IMG_BUCKET,
@@ -34,7 +32,7 @@ def upload_screenshot():
 def create_image(tags):
     """Generate an image using OpenAI DALL-E model.
     Args:
-        tags (dict): A wrapper for the various types of image tags
+        tags (TagSet): A wrapper for the various types of image tags
             to use as both prompt inputs and fontend-only display values
             to be stored as metadata.
     """
@@ -43,8 +41,8 @@ def create_image(tags):
     )
 
     prompt = f"""
-        Create a screenshot for a {tags['genre']} video game described by the following attributes: 
-        {', '.join(tags['context'])}
+        Create a screenshot for a {tags.genre} video game described by the following attributes: 
+        {', '.join(tags.context)}
     """.strip()
 
     response = client.images.generate(
@@ -62,8 +60,8 @@ def create_image(tags):
 
     # Add the tags as custom metadata
     metadata = PngInfo()
-    metadata.add_text("genre", tags["genre"])
-    for i, tag in enumerate(tags["context"] + tags["extra"]):
+    metadata.add_text("genre", tags.genre)
+    for i, tag in enumerate(tags.context + tags.extra):
         metadata.add_text(f"tag{i+1}", tag)
 
     # Create a new file pointer to avoid data corruption issues

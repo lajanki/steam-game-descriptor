@@ -28,3 +28,10 @@ class GameDescription:
     developer: str
     system_requirements: list[dict]
     screenshot_url: str
+
+@dataclass
+class TagSet:
+    """Model for a set of tags."""
+    genre: str
+    context: list[str]
+    extra: list[str]
