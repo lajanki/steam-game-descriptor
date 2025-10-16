@@ -15,6 +15,9 @@ from app.utils import gcs, common, data_files
 logger = logging.getLogger()
 
 
+screenshot_pool = None
+
+
 class DescriptionGenerator():
 	"""Generate a formatted game description consisting of
 	 * a title
@@ -190,14 +193,25 @@ class DescriptionGenerator():
 				}
 			)
 
+
+		# Screenshot
+		global screenshot_pool
+		# Lazy load the screenshot pool on first use
+		if screenshot_pool is None:
+			screenshot_pool = gcs.list_image_bucket()
+
+		screenshot = random.choice(screenshot_pool)
+
 		description_model = model_specs.GameDescription(
 			description=description,
 			features=features,
 			tagline=tagline,
 			tags=tags,
 			developer=generate_developer(),
-			system_requirements=system_requirements
+			system_requirements=system_requirements,
+			screenshot_url=screenshot.public_url
 		)
+
 		# return a json serializable dict
 		return dataclasses.asdict(description_model)
 

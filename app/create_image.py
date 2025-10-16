@@ -31,7 +31,6 @@ def upload_screenshot():
     )
     print(f"Image uploaded to gs://{gcs.IMG_BUCKET}/{prefix}.")
 
-
 def create_image(tags):
     """Generate an image using OpenAI DALL-E model.
     Args:

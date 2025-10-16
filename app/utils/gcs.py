@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import random
 
 from google.cloud import storage
 
@@ -75,6 +76,6 @@ def list_image_bucket():
     Return:
         a list of blobs
     """
-
-    # Return a list to choose a random element from
-    return list(gcs_client.list_blobs(IMG_BUCKET))
+    # Always list the contents from the production bucket
+    image_bucket = IMG_BUCKET.replace("dev_", "prod_")
+    return list(gcs_client.list_blobs(image_bucket))
