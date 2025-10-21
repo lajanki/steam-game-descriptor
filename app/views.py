@@ -80,7 +80,7 @@ def parse_descriptions():
 def generate_image():
     """Generate a screenshot and upload to Cloud Storage bucket."""
     if "X-Appengine-Cron" in request.headers:
-        create_image.upload_screenshot()
+        create_image.upload_image()
         return "OK\n", 200
 
     abort(500, "Bad request")
