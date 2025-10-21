@@ -200,7 +200,20 @@ class DescriptionGenerator():
 		if screenshot_pool is None:
 			screenshot_pool = gcs.list_image_bucket()
 
-		screenshot = random.choice(screenshot_pool)
+		matching_full_blobs = [p for p in screenshot_pool if f"{tags.genre}/{tags.context[0]}" in p.name]
+		matching_genre_blobs = [p for p in screenshot_pool if f"{tags.genre}/" in p.name]
+
+		if matching_full_blobs:
+			logger.info("Found matching screenshots.")
+			screenshot_blobs = matching_full_blobs
+		elif matching_genre_blobs:
+			logger.info("Found matching screenshots for the genre.")
+			screenshot_blobs = matching_genre_blobs
+		else:
+			logger.info("No matching screenshots found. Using random screenshot.")
+			screenshot_blobs = screenshot_pool
+
+		screenshot = random.choice(screenshot_blobs)
 
 		description_model = model_specs.GameDescription(
 			description=description,
