@@ -3,12 +3,17 @@ from io import BytesIO
 import logging
 import os
 import time
+import random
+import textwrap
 
 from openai import OpenAI
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
 from app.utils import gcs, common
+
+
+logger = logging.getLogger()
 
 
 def upload_image():
@@ -19,28 +24,60 @@ def upload_image():
     """
     tags = common.select_tags()
 
-    prompt = f"""
-        Create a screenshot for a {tags.genre} video game described by the following attributes: 
+    ## Screenshot generation
+    logger.info("Generating screenshot image...")
+    prompt = textwrap.dedent(f"""
+        Create a screenshot for a fictonal {tags.genre} video game described by the following attributes:
         {', '.join(tags.context)}
-    """.strip()
+    """).strip()
 
     metadata = {
         "genre": tags.genre,
         **{f"tag{i+1}": tag for i, tag in enumerate(tags.context + tags.extra)}
     }
 
-    image_bytes = _create_image(prompt, metadata)
-
     prefix = f"{tags.genre}/{tags.context[0]}/{int(time.time())}.png"
     gcs.upload_to_gcs(
-        image_bytes,
+        _create_image(prompt, metadata),
         gcs.IMG_BUCKET,
         prefix,
         content_type="image/png"
     )
-    print(f"Image uploaded to gs://{gcs.IMG_BUCKET}/{prefix}.")
+    logger.info("Image uploaded to gs://%s/%s", gcs.IMG_BUCKET, prefix)
 
-def _create_image(prompt, metadata):
+
+    ## Art generation
+    logger.info("Generating art image...")
+    prompt_style_prefixes = [
+        "promotional art",
+        "cover art",
+        "box art",
+    ]
+    prompt_suffixes = [
+        "Do not add any text to the image",
+        "Add generic branding elements but do not add a title",
+        "",
+    ]
+
+    prompt_prefix = random.choice(prompt_style_prefixes)
+    prompt_suffix = random.choice(prompt_suffixes)
+    prompt = textwrap.dedent(f"""
+        Create a {prompt_prefix} for a fictional {tags.genre} video game described by the following attributes:
+        {', '.join(tags.context)}
+        {prompt_suffix}.
+    """).strip()
+    print(prompt)
+
+    prefix = f"{tags.genre}/{tags.context[0]}/art/{int(time.time())}.png"
+    gcs.upload_to_gcs(
+        _create_image(prompt),
+        gcs.IMG_BUCKET,
+        prefix,
+        content_type="image/png"
+    )
+    logger.info("Image uploaded to gs://%s/%s", gcs.IMG_BUCKET, prefix)
+
+def _create_image(prompt, metadata={}):
     """Generate an image using OpenAI DALL-E model.
     Args:
         prompt (str): The prompt to use for image generation.
