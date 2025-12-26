@@ -37,13 +37,10 @@ def select_tags():
 
     # add 0-2 more text-only tags
     r = random.random()
-    if r < 0.2:
-        return tags_envelope 
-
-    elif r < 0.72:
+    if r < 0.52:
         tags_envelope["extra"].append(random.choice(GENRES["Other"]))
 
-    else:
+    elif r > 0.8:
         tags_envelope["extra"].extend(random.choices(GENRES["Other"], k=2))
 
     return model_specs.TagSet(**tags_envelope)
