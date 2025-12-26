@@ -198,22 +198,10 @@ class DescriptionGenerator():
 		global screenshot_pool
 		# Lazy load the screenshot pool on first use
 		if screenshot_pool is None:
+			logger.info("Loading screenshot pool...")
 			screenshot_pool = gcs.list_image_bucket()
 
-		matching_full_blobs = [p for p in screenshot_pool if f"{tags.genre}/{tags.context[0]}" in p.name]
-		matching_genre_blobs = [p for p in screenshot_pool if f"{tags.genre}/" in p.name]
-
-		if matching_full_blobs:
-			logger.info("Found matching screenshots.")
-			screenshot_blobs = matching_full_blobs
-		elif matching_genre_blobs:
-			logger.info("Found matching screenshots for the genre.")
-			screenshot_blobs = matching_genre_blobs
-		else:
-			logger.info("No matching screenshots found. Using random screenshot.")
-			screenshot_blobs = screenshot_pool
-
-		screenshot = random.choice(screenshot_blobs)
+		screenshots = select_screenshots(screenshot_pool, tags)
 
 		description_model = model_specs.GameDescription(
 			description=description,
@@ -222,7 +210,7 @@ class DescriptionGenerator():
 			tags=tags,
 			developer=generate_developer(),
 			system_requirements=system_requirements,
-			screenshot_url=screenshot.public_url
+			screenshots=[s.public_url for s in screenshots]
 		)
 
 		# return a json serializable dict
@@ -303,3 +291,39 @@ def generate_developer():
 
 	# return a properly capitalized word
 	return template.strip("- ").title()
+
+def select_screenshots(screenshot_pool, tags):
+	"""Select screenshots from the screenshot pool matching given tags.
+	
+	Args:
+		screenshot_pool (list): a list of image blobs
+		tags (TagSet): content tags
+
+	Return:
+		a list of image blobs. The first item is an artwork blob (if available),
+		the rest are screenshots.
+	"""
+	matching_full_blobs = [b for b in screenshot_pool if f"{tags.genre}/{tags.context[0]}" in b.name]
+	matching_genre_blobs = [b for b in screenshot_pool if f"{tags.genre}/" in b.name]
+
+	if matching_full_blobs:
+		logger.info("Found matching screenshots.")
+		screenshot_blobs = matching_full_blobs
+	elif matching_genre_blobs:
+		logger.info("Found matching screenshots for the genre.")
+		screenshot_blobs = matching_genre_blobs
+	else:
+		logger.info("No matching screenshots found.")
+		return []
+
+	# Split the blobs into 1 artwork and 2-3 screenshots
+	artwork_blobs = [b for b in screenshot_blobs if "/art/" in b.name]
+	screenshot_blobs = [b for b in screenshot_blobs if "/art/" not in b.name]
+
+	SIZE = random.randint(2,3)
+	screenshots = random.sample(screenshot_blobs, SIZE)
+	if artwork_blobs:
+		logger.debug("Adding artwork.")
+		screenshots = [random.choice(artwork_blobs)] + screenshots
+
+	return screenshots

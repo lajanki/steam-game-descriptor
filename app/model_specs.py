@@ -27,7 +27,7 @@ class GameDescription:
     tags: dict
     developer: str
     system_requirements: list[dict]
-    screenshot_url: str
+    screenshots: list[str]
 
 @dataclass
 class TagSet:
