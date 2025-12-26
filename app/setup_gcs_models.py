@@ -6,7 +6,7 @@ from app import parser, utils, BASE
 from app.generator import trainer
 
 
-logger = logging.getLogger()
+logger = logging.getLogger("app")
 
 
 def setup():

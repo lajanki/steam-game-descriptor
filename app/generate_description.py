@@ -12,7 +12,7 @@ from app.generator import generator
 from app.utils import gcs, common, data_files
 
 
-logger = logging.getLogger()
+logger = logging.getLogger("app")
 
 
 screenshot_pool = None
@@ -323,7 +323,7 @@ def select_screenshots(screenshot_pool, tags):
 	SIZE = min(random.randint(1,2), len(screenshot_blobs))
 	screenshots = random.sample(screenshot_blobs, SIZE)
 	if artwork_blobs:
-		logger.debug("Adding artwork.")
+		logger.info("Adding artwork.")
 		screenshots = [random.choice(artwork_blobs)] + screenshots
 
 	return screenshots

@@ -1,5 +1,7 @@
 # Flask routes
 
+import logging
+
 from flask import (
     abort,
     Flask,
@@ -20,12 +22,9 @@ app = Flask(__name__)
 app.config.from_prefixed_env()
 
 # Set the logging level to DEBUG if Flask is in debug mode.
-# Note that will affect lower level loggers as well, including 
-# Cloud Storage logging.
-# if app.debug:
-#     import logging
-#     logger = logging.getLogger()
-#     logger.setLevel(logging.DEBUG)
+if app.debug:
+    logger = logging.getLogger("app")
+    logger.setLevel(logging.DEBUG)
 
 
 # Initialize global variables for lazy loading

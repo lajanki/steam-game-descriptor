@@ -8,7 +8,7 @@ import random
 from google.cloud import storage
 
 
-logger = logging.getLogger()
+logger = logging.getLogger("app")
 
 MODEL_BUCKET = os.environ["MODEL_BUCKET"]
 TEMP_BUCKET = os.environ["TEMP_BUCKET"]

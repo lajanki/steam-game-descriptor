@@ -13,7 +13,7 @@ from PIL.PngImagePlugin import PngInfo
 from app.utils import gcs, common
 
 
-logger = logging.getLogger()
+logger = logging.getLogger("app")
 
 
 def upload_image():
