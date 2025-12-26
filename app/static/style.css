@@ -296,3 +296,53 @@ ul#system_requirements {
   color: #f0d0d0;
 }
 
+.screenshots-container {
+  margin: 20px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  scrollbar-color: #666 #333;
+}
+
+.screenshots-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.screenshots-container::-webkit-scrollbar-track {
+  background: #333;
+  border-radius: 4px;
+}
+
+.screenshots-container::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 4px;
+}
+
+.screenshots-container::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+.screenshots-scroll {
+  display: inline-flex;
+  gap: 15px;
+  padding: 10px 0;
+}
+
+.game-screenshot {
+  height: 200px;
+  width: auto;
+  max-width: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid #444;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-screenshot:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  border-color: #666;
+}
+

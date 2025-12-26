@@ -316,11 +316,11 @@ def select_screenshots(screenshot_pool, tags):
 		logger.info("No matching screenshots found.")
 		return []
 
-	# Split the blobs into 1 artwork and 2-3 screenshots
+	# Split the blobs into 1 artwork and 1-n screenshots
 	artwork_blobs = [b for b in screenshot_blobs if "/art/" in b.name]
 	screenshot_blobs = [b for b in screenshot_blobs if "/art/" not in b.name]
 
-	SIZE = random.randint(2,3)
+	SIZE = min(random.randint(1,2), len(screenshot_blobs))
 	screenshots = random.sample(screenshot_blobs, SIZE)
 	if artwork_blobs:
 		logger.debug("Adding artwork.")
