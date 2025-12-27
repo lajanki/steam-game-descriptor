@@ -1,5 +1,7 @@
 # Flask routes
 
+import logging
+
 from flask import (
     abort,
     Flask,
@@ -20,15 +22,12 @@ app = Flask(__name__)
 app.config.from_prefixed_env()
 
 # Set the logging level to DEBUG if Flask is in debug mode.
-# Note that will affect lower level loggers as well, including 
-# Cloud Storage logging.
-# if app.debug:
-#     import logging
-#     logger = logging.getLogger()
-#     logger.setLevel(logging.DEBUG)
+if app.debug:
+    logger = logging.getLogger("app")
+    logger.setLevel(logging.DEBUG)
 
 
-# Initialize a generator instance for lazy loading
+# Initialize global variables for lazy loading
 generator = None
 
 
@@ -80,7 +79,7 @@ def parse_descriptions():
 def generate_image():
     """Generate a screenshot and upload to Cloud Storage bucket."""
     if "X-Appengine-Cron" in request.headers:
-        create_image.upload_screenshot()
+        create_image.upload_image()
         return "OK\n", 200
 
     abort(500, "Bad request")

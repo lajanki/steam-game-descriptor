@@ -3,11 +3,12 @@
 import json
 import logging
 import os
+import random
 
 from google.cloud import storage
 
 
-logger = logging.getLogger()
+logger = logging.getLogger("app")
 
 MODEL_BUCKET = os.environ["MODEL_BUCKET"]
 TEMP_BUCKET = os.environ["TEMP_BUCKET"]
@@ -58,9 +59,8 @@ def _download_all_model_files():
     Returns:
         dict: A dictionary mapping model basenames to model data as bytes.
     """
-
     logger.info("Loading models from gs://%s/models", MODEL_BUCKET)
-
+    
     blobs = gcs_client.list_blobs(MODEL_BUCKET, prefix="models/", match_glob="**.pkl")
     models = {}
 
@@ -70,3 +70,12 @@ def _download_all_model_files():
         models[model_base_name] = data
     
     return models
+
+def list_image_bucket():
+    """List all blobs in the image bucket.
+    Return:
+        a list of blobs
+    """
+    # Always list the contents from the production bucket
+    image_bucket = IMG_BUCKET.replace("dev_", "prod_")
+    return list(gcs_client.list_blobs(image_bucket))

@@ -6,7 +6,7 @@ from app import utils
 
 
 DEFAULT_TEXT_LENGTH = 25
-logger = logging.getLogger()
+logger = logging.getLogger("app")
 
 
 class Generator:

@@ -82,6 +82,16 @@
 							}
 						}
 
+						// screenshots; display horizontally with scroll
+						if (data.screenshots && data.screenshots.length > 0) {
+							var screenshot_html = '<div class="screenshots-container"><div class="screenshots-scroll">';
+							for (let screenshot of data.screenshots) {
+								screenshot_html += `<img src="${screenshot}" alt="Game Screenshot" class="game-screenshot">`;
+							}
+							screenshot_html += '</div></div>';
+							$("#screenshots").html(screenshot_html);
+						}
+
 						var developer = "Developer: " + data.developer
 						$("#developer > span").text(developer);
 						$("#developer").show();
@@ -155,6 +165,7 @@
 						<div class="clearable" id="description"></div>
 						<div class="clearable" id="tagline"></div>
 						<div class="clearable" id="features"></div>
+						<div class="clearable" id="screenshots"></div>
 						<div id="developer">
 							<span class="clearable">Developer: </span>
 						</div>

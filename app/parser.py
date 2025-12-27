@@ -30,7 +30,7 @@ from bs4 import BeautifulSoup
 from app.utils import json_set_encoder, gcs
 
 
-logger = logging.getLogger()
+logger = logging.getLogger("app")
 
 API_ENDPOINT = "https://store.steampowered.com/api/appdetails"
 
