@@ -1,0 +1,44 @@
+{{ADJ}} {{NOUN}}
+{{NOUN}} of {{NOUN}}
+The {{ADJ}} {{NOUN}}
+{{NOUN}} and the {{NOUN}}
+{{VERB}} of the {{NOUN}}
+{{NOUN}} Rising
+Rise of the {{NOUN}}
+{{NOUN}} Reborn
+{{NOUN}} Protocol
+{{NOUN}}{{NOUN}}
+Project {{NOUN}}
+{{NOUN}} Nexus
+{{NOUN}} Zero
+{{NOUN}} Prime
+{{NOUN}} Horizon
+{{NOUN}} Initiative
+Sector {{NUM}}
+{{NOUN}} Strike
+{{NOUN}} Assault
+{{NOUN}} Warfare
+Operation {{NOUN}}
+{{NOUN}} Unleashed
+{{NOUN}} Reloaded
+{{NOUN}} Tactics
+{{NOUN}} Mix
+{{NOUN}} Shuffle
+{{ADJ}} Puzzle
+{{NOUN}} Blocks
+{{NOUN}} Match
+{{NOUN}} Pop
+{{NOUN}} Dash
+Legends of {{NOUN}}
+Tales of {{NOUN}}
+{{NOUN}} Chronicles
+{{NOUN}} Saga
+{{NOUN}} Realms
+Kingdom of {{NOUN}}
+{{NOUN}} Frontier
+{{NOUN}} & {{NOUN}}
+{{VERB}} Me
+The Last {{NOUN}}
+Before {{NOUN}}
+{{NOUN}} Alone
+{{NOUN}} Is You

@@ -1973,7 +1973,6 @@ dependencies = [
     { name = "google-cloud-storage" },
     { name = "gunicorn" },
     { name = "jsonschema" },
-    { name = "nltk" },
     { name = "openai" },
     { name = "pillow" },
     { name = "python-dotenv" },
@@ -1985,6 +1984,7 @@ dependencies = [
 dev = [
     { name = "ipython", version = "8.35.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "ipython", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "nltk" },
     { name = "pytest" },
     { name = "pytest-env" },
 ]
@@ -1998,7 +1998,6 @@ requires-dist = [
     { name = "google-cloud-storage", specifier = ">=3.1.0" },
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "jsonschema", specifier = ">=4.23.0" },
-    { name = "nltk", specifier = ">=3.9.2" },
     { name = "openai", specifier = ">=1.71.0" },
     { name = "pillow", specifier = ">=11.1.0" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
@@ -2009,6 +2008,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "ipython", specifier = ">=8.35.0" },
+    { name = "nltk", specifier = ">=3.9.2" },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-env", specifier = ">=1.1.5" },
 ]

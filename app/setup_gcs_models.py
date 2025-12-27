@@ -21,11 +21,6 @@ def setup():
     t = trainer.Trainer(description_text, "description.pkl")
     t.run()
 
-    logger.info("Creating title model...")
-    names_text = parser.get_app_names()
-    t = trainer.Trainer(names_text, "title.pkl", 2)
-    t.run()
-
     logger.info("Creating feature model...")
     feature_text = utils.common.get_text_file(os.path.join(BASE, "data", "features.txt"))
     t = trainer.Trainer(feature_text, "feature.pkl")

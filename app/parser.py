@@ -1,6 +1,5 @@
 # Parses Steam game descriptions, in batches, to temporary Cloud Storage bucket.
-# Uses both the official Steamworks API api.steampowered.com for fetching available app list
-# and the undocumented store.steampowered.com/api for actual descriptions.
+# Uses the undocumented store.steampowered.com/api for app descriptions.
 # See https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI
 # for community wiki on store.steampowered.com usage.
 #
@@ -33,7 +32,7 @@ from app.utils import json_set_encoder, gcs
 
 logger = logging.getLogger("app")
 
-URL = "https://store.steampowered.com/api/appdetails"
+API_ENDPOINT = "https://store.steampowered.com/api/appdetails"
 
 
 def upload_description_batch(batch_size=200):
@@ -41,8 +40,8 @@ def upload_description_batch(batch_size=200):
 	Args:
 		batch_size (int): sample size of descriptions to parse.
 	"""
-	app_id_list = _get_app_id_list()
-	sample = random.sample(app_id_list, batch_size)
+	app_id_batch = get_app_id_batch(batch_size)
+
 	TEMP_BUCKET_PREFIX = os.environ["TEMP_BUCKET_PREFIX"]
 
 	logger.info("Parsing %s descriptions", batch_size)
@@ -50,9 +49,9 @@ def upload_description_batch(batch_size=200):
 		s.params = {"cc": "us", "l": "english"}
 
 		success = 0
-		for app_id in sample:
-			logger.debug("Querying %s?appids=%s", URL, app_id)
-			r = s.get(URL, params={"appids": app_id})
+		for app_id in app_id_batch:
+			logger.debug("Querying %s?appids=%s", API_ENDPOINT, app_id)
+			r = s.get(API_ENDPOINT, params={"appids": app_id})
 			r.raise_for_status()
 
 			if not r.json()[str(app_id)]["success"]:
@@ -94,10 +93,37 @@ def upload_description_batch(batch_size=200):
 		TEMP_BUCKET_PREFIX,
 	)
 
-def _get_app_id_list():
-	"""Fetch a list of games on the Steam store.
+def get_app_id_batch(batch_size):
+	"""Get a batch of pseudo Steam app ids.
+	
+	While the official Steamworks API provides an endpoint for available apps,
+	we only need a small sample of app ids for training purposes.
+	https://partner.steamgames.com/doc/webapi/IStoreService#GetAppList
+
+	The app ids start from 10 and (at the time of writing) reach to over 4 000 000.
+	Base game ids appear to end with 0.
+
+	The ids returned are not guaranteed to be valid Steam apps.
+
+	Args:
+		batch_size (int): number of items to return
 	Return:
-		list of app ids"""
+		a list of random numeric ids
+	"""
+	return random.sample(range(10, 4_000_000, 10), batch_size)
+
+def _get_app_id_list():
+	"""DEPRECATED
+	The referenced API endpoint appears to be deprecated
+	https://partner.steamgames.com/doc/webapi/isteamapps#GetAppList
+
+	See get_app_id_batch instead.
+
+	Fetch a list of games on the Steam store.
+	Return:
+		list of app ids
+	"""
+	logger.info("Fetching app list from Steam API...")
 	r = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2")
 	app_list = r.json()["applist"]["apps"]
 	# excude trailers, soundtracks and demos
@@ -108,33 +134,6 @@ def _get_app_id_list():
 
 	return app_ids
 
-def get_app_names(batch_size=100_000):
-	"""Fetch a sampled list of app names as a single joined string.
-	Args:
-		batch_size (int): the sample size; number of apps to parse
-	Return:
-		a joined string of the app names
-	"""
-	r = requests.get("https://api.steampowered.com/ISteamApps/GetAppList/v2")
-	app_list = r.json()["applist"]["apps"]
-
-	# Filter results:
-	# * ignore some test apps
-	# * ignore titles without any uppercase ascii characters 
-	names = [
-		app["name"]
-		for app in app_list
-		if (
-			not app["name"].lower().endswith("playtest")
-			and "valvetestapp" not in app["name"].lower()
-			and app["name"] not in ("test", "test2", "test3")
-			and set(app["name"]) & set(string.ascii_uppercase)
-		)
-	]
-
-	sampled = random.sample(names, batch_size)
-	return " ".join(sampled)
-
 def format_data_dict(app_content):
 	"""Format a dictionary containing items needed for training data. Gather various keys
 	from the source API response.
@@ -144,7 +143,7 @@ def format_data_dict(app_content):
 		"requirements": _extract_requirements(app_content),
 		"ratings": _extract_content_rating(app_content),
 		"metadata": {
-			"source": f"{URL}?appids={app_content['steam_appid']}"
+			"source": f"{API_ENDPOINT}?appids={app_content['steam_appid']}"
 		}
 	}
 
