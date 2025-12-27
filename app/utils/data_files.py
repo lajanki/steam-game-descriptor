@@ -8,6 +8,9 @@ from app import BASE
 with open(os.path.join(BASE, "data", "developers.txt")) as f:
 	DEVELOPER_TEMPLATES = f.readlines()
 
+with open(os.path.join(BASE, "data", "titles.txt")) as f:
+	TITLE_TEMPLATES = f.readlines()
+
 with open(os.path.join(BASE, "data", "pos_tags.json")) as f:
 	POS_MAP = json.load(f)
 	

@@ -38,7 +38,6 @@ class DescriptionGenerator():
 
 		self.generators = SimpleNamespace(
 			description=create_generator("description"),
-			title=create_generator("title"),
 			feature=create_generator("feature"),
 			tagline=create_generator("tagline"),
 
@@ -66,13 +65,6 @@ class DescriptionGenerator():
 
 		description = []
 
-		# Title
-		size = random.randint(1, 4)
-		title = self.generators.title.generate(size=size, continue_until_valid=True)
-
-		title = string.capwords(title.rstrip("."))
-		title = title.replace(".", ":")
-
 		# Generate n paragraphs as main content
 		paragraphs = []
 		for _ in range(self.description_config.num_paragraphs):
@@ -91,7 +83,7 @@ class DescriptionGenerator():
 			)
 
 		description.append({
-			"title": title,
+			"title": generate_title(),
 			"content": "\n\n".join(paragraphs)
 		})
 
@@ -229,23 +221,29 @@ def create_description_config():
 		)
     )
 
-def generate_developer():
-	"""Generate a developer name from filling templates in data/developers.txt
-	with POS data from the app names files.
-	"""
-	template = random.choice(data_files.DEVELOPER_TEMPLATES).rstrip()
-	pos_map = data_files.POS_MAP
+def _render_template(template):
+	"""Fill a POS tagged template string.
 
-	
-	# template can be
-	#  1. undetermined, such as {{}} Software, where 1-2 nouns and adjectives should be fetched from the POS tag map
-	#  2. determined, such as {{NOUN}}ware, where a noun should be fetched
-	# Additionally, when preceded by {{?}} add a random tag based on a coin toss
+	Uses a static POS map extracted from nltk corpus.
+	Template tags in the input can be either:
+	  * undetermined, such as "{{}} Software",
+	  	where 1-2 nouns and adjectives is randomly chosen, or
+	  * determined, such as {{NOUN}}ware, where a noun is chosen
+	Additionally, a {{?}} token will be filled with randomly selected tag
+
+	Args:
+		template (str): the template to fill
+	Return
+		the rendered template
+	"""
+	pos_map = data_files.POS_MAP
 	VALID_TAGS = ["NOUN", "ADJ", "VERB", "ADV"]
+
+	# empty token; select 1-n random tags
 	if "{{}}" in template:
 		k = random.randint(1,2)
-		# select POS tags
-		tags = random.choices(VALID_TAGS, k=k) # sample with replacement
+		# select random tags with replacement
+		tags = random.choices(VALID_TAGS, k=k)
 
 		# select 1 word from each tag
 		new_words = []
@@ -255,11 +253,11 @@ def generate_developer():
 
 		template = template.replace("{{}}", " ".join(new_words))
 
+	# ?; select 0-1 random tags
 	if "{{?}}" in template:
 		k = random.randint(0,1)
 		tags = random.choices(VALID_TAGS, k=k)
 
-		# if k==0, replace the template {{?}}-string with empty string
 		if not tags:
 			word = ""
 		else:
@@ -267,6 +265,7 @@ def generate_developer():
 
 		template = template.replace("{{?}}", word)
 
+	# otherwise extract the tag from the token and fill accordingly
 	for tag_template in re.findall("{{[A-Z]+}}", template):
 		tag = tag_template[2:-2]  # tag name within {{ }}
 
@@ -274,5 +273,23 @@ def generate_developer():
 		new_words = random.sample(pos_map[tag], k)
 		template = template.replace(tag_template, " ".join(new_words))
 
-	# return a properly capitalized word
-	return template.strip("- ").title()
+	return template
+
+def generate_developer():
+	"""Generate a developer name by filling a random developer template.
+
+	Return:
+		the rendered developer name
+	"""
+	template = random.choice(data_files.DEVELOPER_TEMPLATES).rstrip()
+	return _render_template(template).strip("- ").title()
+
+def generate_title():
+	"""Generate a game title by filling a random title template.
+
+	Return:
+		the rendered title
+	"""
+	template = random.choice(data_files.TITLE_TEMPLATES).rstrip()
+	return _render_template(template).strip("- ").title()
+
