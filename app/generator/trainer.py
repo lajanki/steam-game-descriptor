@@ -7,7 +7,7 @@ import sys
 from app.utils import gcs
 
 
-logger = logging.getLogger()
+logger = logging.getLogger("app")
 
 
 class Trainer():
