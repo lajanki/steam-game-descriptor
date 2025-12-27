@@ -1,6 +1,5 @@
 # Parses Steam game descriptions, in batches, to temporary Cloud Storage bucket.
-# Uses both the official Steamworks API api.steampowered.com for fetching available app list
-# and the undocumented store.steampowered.com/api for actual descriptions.
+# Uses the undocumented store.steampowered.com/api for app descriptions.
 # See https://wiki.teamfortress.com/wiki/User:RJackson/StorefrontAPI
 # for community wiki on store.steampowered.com usage.
 #
