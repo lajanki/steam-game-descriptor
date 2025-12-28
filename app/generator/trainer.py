@@ -11,7 +11,7 @@ logger = logging.getLogger("app")
 
 
 class Trainer():
-	"""Trainer creates ('trains') a Markov text chain model by splitting source text into ngrams
+	"""Trainer creates a Markov text chain model by splitting source text into ngrams
 	and keeping track of which n-1 word chains is followed by the remaining word. Trainers are
 	stored in Google Cloud Storage bucket for later access.
 
@@ -22,12 +22,14 @@ class Trainer():
 		train_text_data (str): The source text to parse as ngrams
 		filename (str): name of the model to use when storing in Cloud Storage
 		n (int): ngram size; the number of consecutive words to parse the original text
+		character_level (boolean): whether to create character instead of word level ngrams.
 	"""
 
-	def __init__(self, train_text_data, filename, n=3):
+	def __init__(self, train_text_data, filename, n=3, character_level=False):
 		self.n = n
 		self.train_text_data = train_text_data
 		self.filename = filename
+		self.character_level = character_level
 		self.model = None
 
 	def run(self):
@@ -42,13 +44,14 @@ class Trainer():
 		gcs.upload_to_gcs(model, gcs.MODEL_BUCKET, "models/" + self.filename)
 
 	def train(self):
-		"""Train the model given input text. Splits the text into ngrams and store as a dict of (n-1)-gram keys
-		and 1-gram successor as values.
+		"""Train the model with the input text.
+		
+		Splits the text into ngrams and store as a dict of (n-1)-gram keys
+		and 1-gram successor as values. Duplicate successors are ignored.
 		"""
-		# map successor words as set to avoid duplicates
 		data = collections.defaultdict(set)
 		for ngram in self.create_ngrams():
-			key = tuple(ngram[:-1])  # convert to tuple for a hashable dictionary key
+			key = tuple(ngram[:-1])  # convert to a hashable dictionary key
 			data[key].add(ngram[-1])
 
 		# Convert back to a regular dictionary to prevent
@@ -56,14 +59,20 @@ class Trainer():
 		self.model = dict(data)
 
 	def create_ngrams(self):
-		"""Generator for creating ngrams from the training data. For instance,
+		"""Split input training data into ngrams.
+		
+		For instance,
 		"What a lovely day" would create the following two 3-grams:
 			[What, a, lovely], and
 			[a, lovely, day]
 		Return:
 			a generator yielding the ngrams as list of length n
 		"""
-		train_data = self.train_text_data.split()
+		if self.character_level:
+			train_data = self.train_text_data
+		else:
+			train_data = self.train_text_data.split()
+
 		if len(train_data) < self.n:
 			raise RuntimeError(f"Not enough words to split; received {len(train_data)}, need {self.n}")
 

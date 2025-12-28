@@ -21,6 +21,11 @@ def setup():
     t = trainer.Trainer(description_text, "description.pkl")
     t.run()
 
+    logger.info("Creating character level description model...")
+    description_text = " ".join([item["detailed_description"] for item in source_data_list])
+    t = trainer.Trainer(description_text, "character.pkl", n=4, character_level=True)
+    t.run()
+
     logger.info("Creating feature model...")
     feature_text = utils.common.get_text_file(os.path.join(BASE, "data", "features.txt"))
     t = trainer.Trainer(feature_text, "feature.pkl")

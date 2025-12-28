@@ -25,6 +25,21 @@ def test_model_train():
     }
     assert t.model == expected
 
+def test_character_level_model_train():
+    """Test character level model train output."""
+    train_text_data = "abcdefg"
+    t = trainer.Trainer(train_text_data, "dummy_filename", character_level=True)
+    t.train()
+
+    expected = {
+        ("a", "b"): {"c"},
+        ("b", "c"): {"d"},
+        ("c", "d"): {"e"},
+        ("d", "e"): {"f"},
+        ("e", "f"): {"g"},
+    }
+    assert t.model == expected
+
 def test_model_on_duplicate_successors():
     """Test model train with duplicate ngrams."""
     train_text_data = "almost too hot, almost too cold. almost too hot,"
