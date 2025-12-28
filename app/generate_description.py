@@ -278,7 +278,7 @@ def _render_template(template):
 		else:
 			word = random.choice(pos_map[tags[0]])
 
-		template = template.replace("{{?}}", word)
+		template = template.replace("{{?}}", word).strip()
 
 	# otherwise extract the tag from the token and fill accordingly
 	for tag_template in re.findall("{{[A-Z]+}}", template):
