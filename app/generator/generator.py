@@ -10,13 +10,15 @@ logger = logging.getLogger("app")
 
 
 class Generator:
-	"""The main function of a Generator is to create text from a pre-trained model.
-	Args:
-		model_data (dict): A dictionary containing the raw model data for each named model.
-		name (str): Optional name for the Generator instance.
-	"""
+	"""A Generator creates text based on a pre-trained Markov model."""
 
 	def __init__(self, model_data, name=None):
+		"""Initialize the Generator with model data.
+
+		Args:
+			model_data (bytes): A pickle serialized pre-trained raw model data.
+			name (str): Optional name for the Generator instance.
+		"""
 		self.model = pickle.loads(model_data)
 		self.name = name
 

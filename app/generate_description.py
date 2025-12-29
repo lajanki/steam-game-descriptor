@@ -13,13 +13,10 @@ from app.utils import gcs, common, data_files
 
 
 logger = logging.getLogger("app")
-
-
 screenshot_pool = None
 
-
 class DescriptionGenerator():
-	"""Generate a formatted game description consisting of
+	"""Generates formatted game description consisting of multiple items:
 	 * a title
 	 * >= 1 main description paragraphs
 	 * >= 0 sub sections with titles
@@ -28,11 +25,13 @@ class DescriptionGenerator():
 	 * developer name
 	"""
 
-	def __init__(self, config):
+	def __init__(self, context_config):
 		"""Create generators for each description component.
 		Model content is expected to be available in Cloud Storage.
+
+		Args:
+			context_config (dict): additional context to provide to the generator
 		"""
-		self.description_config = None
 		model_data = gcs._download_all_model_files()
 
 		# Helper function to create a Generator instance with its identity
@@ -56,7 +55,7 @@ class DescriptionGenerator():
 			)
 		)
 
-		self.ENABLE_SEMANTIC_CONTEXT = config.get("ENABLE_SEMANTIC_CONTEXT", False)
+		self.ENABLE_SEMANTIC_CONTEXT = context_config.get("ENABLE_SEMANTIC_CONTEXT", False)
 		if self.ENABLE_SEMANTIC_CONTEXT:
 			logger.info("Semantic context enabled for description generation.")
 
@@ -64,6 +63,7 @@ class DescriptionGenerator():
 		"""Generate a description with random number of paragraphs and content types."""
 		# Randomize a new content config for each run
 		self.description_config = create_description_config()
+
 		seeds = data_files.SEEDS
 		tags = common.select_tags()
 

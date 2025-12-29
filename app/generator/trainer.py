@@ -17,15 +17,17 @@ class Trainer():
 
 	A separate Generator instance can then use this to generate new text where every n consecutive
 	words appear somewhere in the original source text.
-
-	Args:
-		train_text_data (str): The source text to parse as ngrams
-		filename (str): name of the model to use when storing in Cloud Storage
-		n (int): ngram size; the number of consecutive words to parse the original text
-		character_level (boolean): whether to create character instead of word level ngrams.
 	"""
 
 	def __init__(self, train_text_data, filename, n=3, character_level=False):
+		"""Initialize a trainer with training data and configuration.
+
+		Args:
+			train_text_data (str): The source text to parse as ngrams
+			filename (str): name of the model to use when storing in Cloud Storage
+			n (int): ngram size; the number of consecutive words to parse the original text
+			character_level (boolean): whether to create character instead of word level ngrams.
+		"""
 		self.n = n
 		self.train_text_data = train_text_data
 		self.filename = filename
