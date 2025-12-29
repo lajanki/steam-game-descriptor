@@ -79,6 +79,31 @@ def test_render_template_with_determined_token(mock_sample):
     rendered = generate_description._render_template(template)
     assert rendered == "A B of the C"
 
+@patch("random.choice")
+def test_title_generation_with_extended_vocabulary(mock_choice, mock_generator):
+    """Test title template filling with generated words."""
+
+    with patch("app.utils.gcs._download_all_model_files"):
+        g = generate_description.DescriptionGenerator(MagicMock())
+
+    # Template with one token
+    mock_generator().generate.side_effect = ["Ad-numbus", "Jessoor"]
+    mock_choice.return_value = "{{NOUN}} Realms"
+
+    title = g.generate_title(enable_extended_vocabulary=True)
+    # the first generated word should be discarded as non-alphabetic
+    assert title == "Jessoor Realms"
+
+
+    # Template with multiple tokens; the first token should be replaced
+    # by the generated word
+    mock_generator().generate.side_effect = ["Ichor"]
+    mock_choice.return_value = "{{ADJ}} {{NOUN}}"
+    title = g.generate_title(enable_extended_vocabulary=True)
+
+    assert title.startswith("Ichor")
+    assert "{{NOUN}}" not in title
+
 def test_number_of_paragraphs_in_config():
     """Test exclusivity of features and subsections in the config:
      * either subsections or features should be enabled

@@ -41,6 +41,7 @@ class DescriptionGenerator():
 
 		self.generators = SimpleNamespace(
 			description=create_generator("description"),
+			names=create_generator("names"),
 			feature=create_generator("feature"),
 			tagline=create_generator("tagline"),
 
@@ -86,7 +87,7 @@ class DescriptionGenerator():
 			)
 
 		description.append({
-			"title": generate_title(),
+			"title": self.generate_title(enable_extended_vocabulary=random.randint(0,1)),
 			"content": "\n\n".join(paragraphs)
 		})
 
@@ -208,6 +209,34 @@ class DescriptionGenerator():
 		# return a json serializable dict
 		return dataclasses.asdict(description_model)
 
+	def generate_title(self, enable_extended_vocabulary=False):
+		"""Generate a title.
+
+		A title is a rendered template using either POS tagged words
+		or generated words.
+
+		Args:
+			enable_extended_vocabulary (boolean): whether to include generated
+				words to the title
+		Return:
+			the title
+		"""
+		template = random.choice(data_files.TITLE_TEMPLATES).rstrip()
+
+		if enable_extended_vocabulary:
+			size = max(5, int(abs(random.gauss(6, 2.5))))
+			# generate a word until we get one with alphabethic only characters
+			for _ in range(10):
+				word = self.generators.names.generate(size=size).replace(" ", "")
+				if re.match(r"^[a-zA-Z]*$", word):
+					break
+
+			# replace the first token with the word
+			m = re.search(r"{{[A-Z]+}}", template)
+			template = template.replace(m.group(), word)
+
+		return _render_template(template).strip("- ").title()
+
 def create_description_config():
 	"""Create a randomized description config for what the generated content
 	should include.
@@ -297,15 +326,6 @@ def generate_developer():
 		the rendered developer name
 	"""
 	template = random.choice(data_files.DEVELOPER_TEMPLATES).rstrip()
-	return _render_template(template).strip("- ").title()
-
-def generate_title():
-	"""Generate a game title by filling a random title template.
-
-	Return:
-		the rendered title
-	"""
-	template = random.choice(data_files.TITLE_TEMPLATES).rstrip()
 	return _render_template(template).strip("- ").title()
 
 def select_screenshots(screenshot_pool, tags):

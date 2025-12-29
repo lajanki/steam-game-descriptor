@@ -23,7 +23,7 @@ def setup():
 
     logger.info("Creating character level description model...")
     description_text = " ".join([item["detailed_description"] for item in source_data_list])
-    t = trainer.Trainer(description_text, "character.pkl", n=4, character_level=True)
+    t = trainer.Trainer(description_text, "names.pkl", n=4, character_level=True)
     t.run()
 
     logger.info("Creating feature model...")
