@@ -63,6 +63,7 @@ class DescriptionGenerator():
 		"""Generate a description with random number of paragraphs and content types."""
 		# Randomize a new content config for each run
 		config = create_description_config()
+		logger.debug(config)
 
 		seeds = data_files.SEEDS
 		tags = common.select_tags()
@@ -191,7 +192,6 @@ class DescriptionGenerator():
 		global screenshot_pool
 		# Lazy load the screenshot pool on first use
 		if screenshot_pool is None:
-			logger.info("Loading screenshot pool...")
 			screenshot_pool = gcs.list_image_bucket()
 
 		screenshots = select_screenshots(screenshot_pool, tags)
@@ -344,13 +344,13 @@ def select_screenshots(screenshot_pool, tags):
 	matching_genre_blobs = [b for b in screenshot_pool if f"{tags.genre}/" in b.name]
 
 	if matching_full_blobs:
-		logger.info("Found matching screenshots.")
+		logger.debug("Found matching screenshots.")
 		screenshot_blobs = matching_full_blobs
 	elif matching_genre_blobs:
-		logger.info("Found matching screenshots for the genre.")
+		logger.debug("Found matching screenshots for the genre.")
 		screenshot_blobs = matching_genre_blobs
 	else:
-		logger.info("No matching screenshots found.")
+		logger.debug("No matching screenshots found.")
 		return []
 
 	# Split the blobs into 1 artwork and 1-n screenshots
@@ -360,7 +360,7 @@ def select_screenshots(screenshot_pool, tags):
 	SIZE = min(random.randint(1,2), len(screenshot_blobs))
 	screenshots = random.sample(screenshot_blobs, SIZE)
 	if artwork_blobs:
-		logger.info("Adding artwork.")
+		logger.debug("Found matching artwork.")
 		screenshots = [random.choice(artwork_blobs)] + screenshots
 
 	return screenshots
