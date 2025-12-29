@@ -62,7 +62,7 @@ class DescriptionGenerator():
 	def __call__(self):
 		"""Generate a description with random number of paragraphs and content types."""
 		# Randomize a new content config for each run
-		self.description_config = create_description_config()
+		config = create_description_config()
 
 		seeds = data_files.SEEDS
 		tags = common.select_tags()
@@ -71,7 +71,7 @@ class DescriptionGenerator():
 
 		# Generate n paragraphs as main content
 		paragraphs = []
-		for _ in range(self.description_config.num_paragraphs):
+		for _ in range(config.num_paragraphs):
 			size = int(abs(random.gauss(15, 3)))
 			seed = random.choice(seeds["text"])
 
@@ -87,13 +87,13 @@ class DescriptionGenerator():
 			)
 
 		description.append({
-			"title": self.generate_title(enable_extended_vocabulary=random.randint(0,1)),
+			"title": self.generate_title(enable_extended_vocabulary=config.extended_title),
 			"content": "\n\n".join(paragraphs)
 		})
 
 		# Repeat for sub sections if included in the config;
 		# 1 paragraph per section
-		for _ in range(self.description_config.num_subsections):
+		for _ in range(config.num_subsections):
 			seed = random.choice(seeds["headers"])
 			header = self.generators.description.generate(
 				seed=seed, size=3, continue_until_valid=True
@@ -117,7 +117,7 @@ class DescriptionGenerator():
 
 		# List of features
 		features = []
-		for _ in range(self.description_config.num_features):
+		for _ in range(config.num_features):
 			# set a shorthish upper bound
 			size = min(int(abs(random.gauss(12, 4))), 22)
 			features.append(
@@ -126,7 +126,7 @@ class DescriptionGenerator():
 
 		# Tagline
 		tagline = ""
-		if self.description_config.tagline:
+		if config.tagline:
 			tagline = self.generators.tagline.generate(size=4, complete_sentence=True)
 
 		# System requirements;
@@ -165,7 +165,7 @@ class DescriptionGenerator():
 		]
 
 		# add other categories only if specified in the config
-		if self.description_config.system_requirements.sound_card:
+		if config.system_requirements.sound_card:
 			system_requirements.append(
 				{
 					"name": "Sound Card",
@@ -175,7 +175,7 @@ class DescriptionGenerator():
 				}
 			)
 
-		if self.description_config.system_requirements.additional_notes:
+		if config.system_requirements.additional_notes:
 			system_requirements.append(
 				{
 					"name": "Additional Notes",
@@ -255,6 +255,7 @@ def create_description_config():
 	num_subsections = random.randint(1,2) if num_features == 0 else 0
 
 	return model_specs.DescriptionConfig(
+		extended_title=random.randint(0,1),
         num_paragraphs=random.randint(1,2),
         num_features=num_features,
         num_subsections=num_subsections,
