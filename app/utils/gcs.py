@@ -33,7 +33,7 @@ def download_from_gcs(bucket, path):
     return blob.download_as_bytes()
 
 def download_all_source_files():
-    """Download all source (serially) files from the temp bucket.
+    """Download (serially) all model training source files from the temp bucket.
 
     This will take a while depending on the number of files in the bucket.
     In practice this has little performance implications as this method
