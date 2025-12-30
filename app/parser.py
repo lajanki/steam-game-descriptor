@@ -75,7 +75,7 @@ def upload_description_batch(batch_size=200):
 			snapshot = format_data_dict(data)
 			ds = datetime.today().strftime("%Y-%m-%d")
 			name = data["name"].replace("/", "-") # Replace / to avoid issues with Cloud Storage prefixes
-			path = f"{gcs.TRAINING_DATA_PREFIX}/{ds}/{name}.json"
+			path = f"{gcs.TRAINING_DATA_PREFIX}{ds}/{name}.json"
 			gcs.upload_to_gcs(
 				json.dumps(snapshot, cls=json_set_encoder.SetEncoder),
 				gcs.DATA_BUCKET,
