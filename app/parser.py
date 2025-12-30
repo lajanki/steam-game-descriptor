@@ -42,8 +42,6 @@ def upload_description_batch(batch_size=200):
 	"""
 	app_id_batch = get_app_id_batch(batch_size)
 
-	TEMP_BUCKET_PREFIX = os.environ["TEMP_BUCKET_PREFIX"]
-
 	logger.info("Parsing %s descriptions", batch_size)
 	with requests.Session() as s:
 		s.params = {"cc": "us", "l": "english"}
@@ -77,10 +75,10 @@ def upload_description_batch(batch_size=200):
 			snapshot = format_data_dict(data)
 			ds = datetime.today().strftime("%Y-%m-%d")
 			name = data["name"].replace("/", "-") # Replace / to avoid issues with Cloud Storage prefixes
-			path = f"{TEMP_BUCKET_PREFIX}/{ds}/{name}.json"
+			path = f"{gcs.TRAINING_DATA_PREFIX}/{ds}/{name}.json"
 			gcs.upload_to_gcs(
 				json.dumps(snapshot, cls=json_set_encoder.SetEncoder),
-				gcs.TEMP_BUCKET,
+				gcs.DATA_BUCKET,
 				path,
 				content_type="application/json",
 			)
@@ -89,8 +87,8 @@ def upload_description_batch(batch_size=200):
 	logger.info(
 		"Succesfully uploaded %s descriptions to %s/%s",
 		success,
-		gcs.TEMP_BUCKET,
-		TEMP_BUCKET_PREFIX,
+		gcs.DATA_BUCKET,
+		gcs.TRAINING_DATA_PREFIX,
 	)
 
 def get_app_id_batch(batch_size):

@@ -12,9 +12,9 @@ from google.cloud.storage import transfer_manager
 
 logger = logging.getLogger("app")
 
-MODEL_BUCKET = os.environ["MODEL_BUCKET"]
-TEMP_BUCKET = os.environ["TEMP_BUCKET"]
-TEMP_BUCKET_PREFIX = os.environ["TEMP_BUCKET_PREFIX"]
+DATA_BUCKET = os.environ["DATA_BUCKET"]
+TRAINING_DATA_PREFIX = os.environ["TRAINING_DATA_PREFIX"]
+MODEL_PREFIX = os.environ["MODEL_PREFIX"]
 IMG_BUCKET = os.environ["IMG_BUCKET"]
 
 gcs_client = storage.Client()
@@ -42,7 +42,9 @@ def download_all_source_files():
     Return:
         a list of dicts loaded from the file contents
     """
-    blobs = gcs_client.list_blobs(TEMP_BUCKET, prefix=TEMP_BUCKET_PREFIX)
+    logger.info("Loading data files from gs://%s/%s", DATA_BUCKET, TRAINING_DATA_PREFIX)
+
+    blobs = gcs_client.list_blobs(DATA_BUCKET, prefix=TRAINING_DATA_PREFIX)
     results = []
 
     count = 0
@@ -51,7 +53,7 @@ def download_all_source_files():
         data = blob.download_as_bytes().decode("utf8")
         results.append(json.loads(data))
     
-    logger.info("Loaded %d files from gs://%s/%s", count, TEMP_BUCKET, TEMP_BUCKET_PREFIX)
+    logger.info("Loaded %d files", count)
     return results
 
 def _download_all_model_files():
@@ -63,9 +65,9 @@ def _download_all_model_files():
     Returns:
         dict: A dictionary mapping model basenames to model data as bytes.
     """
-    logger.info("Loading models from gs://%s/models", MODEL_BUCKET)
+    logger.info("Loading models from gs://%s/%s", DATA_BUCKET, MODEL_PREFIX)
     
-    blobs = list(gcs_client.list_blobs(MODEL_BUCKET, prefix="models/", match_glob="**.pkl"))
+    blobs = list(gcs_client.list_blobs(DATA_BUCKET, prefix=MODEL_PREFIX, match_glob="**.pkl"))
     
     # Prepare blob-file pairs for transfer_manager
     blob_file_pairs = [(blob, io.BytesIO()) for blob in blobs]

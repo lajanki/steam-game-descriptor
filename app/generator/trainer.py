@@ -43,7 +43,7 @@ class Trainer():
 		self.compute_statistics()
 
 		model = pickle.dumps(self.model)
-		gcs.upload_to_gcs(model, gcs.MODEL_BUCKET, "models/" + self.filename)
+		gcs.upload_to_gcs(model, gcs.DATA_BUCKET, gcs.MODEL_PREFIX + self.filename)
 
 	def train(self):
 		"""Train the model with the input text.
