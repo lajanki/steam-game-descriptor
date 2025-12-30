@@ -1,11 +1,13 @@
 # Helper functions for storing and retrieving data from Google Cloud Storage.
 
+import io
 import json
 import logging
 import os
 import random
 
 from google.cloud import storage
+from google.cloud.storage import transfer_manager
 
 
 logger = logging.getLogger("app")
@@ -31,13 +33,12 @@ def download_from_gcs(bucket, path):
     return blob.download_as_bytes()
 
 def download_all_source_files():
-    """Download all source files from the temp bucket.
+    """Download (serially) all model training source files from the temp bucket.
 
     This will take a while depending on the number of files in the bucket.
-    TODO: try concurrent download (to file) with transfer manager:
-      https://cloud.google.com/python/docs/reference/storage/latest/google.cloud.storage.transfer_manager
-    The API does support batch operations, but not for downloading...
-      https://cloud.google.com/storage/docs/batch
+    In practice this has little performance implications as this method
+    is only called when re-training the models.
+
     Return:
         a list of dicts loaded from the file contents
     """
@@ -56,19 +57,38 @@ def download_all_source_files():
 def _download_all_model_files():
     """Download all pre-trained model files from Cloud Storage.
 
+    Uses the transfer_manager module for better throughput and
+    concurrent downloads.
+
     Returns:
         dict: A dictionary mapping model basenames to model data as bytes.
     """
     logger.info("Loading models from gs://%s/models", MODEL_BUCKET)
     
-    blobs = gcs_client.list_blobs(MODEL_BUCKET, prefix="models/", match_glob="**.pkl")
-    models = {}
-
-    for blob in blobs:
-        data = blob.download_as_bytes()
-        model_base_name = blob.name.split("/")[-1]
-        models[model_base_name] = data
+    blobs = list(gcs_client.list_blobs(MODEL_BUCKET, prefix="models/", match_glob="**.pkl"))
     
+    # Prepare blob-file pairs for transfer_manager
+    blob_file_pairs = [(blob, io.BytesIO()) for blob in blobs]
+    
+    # Download all files concurrently
+    results = transfer_manager.download_many(
+        blob_file_pairs,
+        max_workers=8,
+        worker_type=transfer_manager.THREAD
+    )
+    
+    models = {}
+    for (blob, file_obj), result in zip(blob_file_pairs, results):
+        if isinstance(result, Exception):
+            logger.error("Failed to download %s: %s", blob.name, result)
+            continue
+        
+        # Read the downloaded data from the BytesIO object
+        file_obj.seek(0)
+        model_base_name = blob.name.split("/")[-1]
+        models[model_base_name] = file_obj.read()
+    
+    logger.info("Loaded %d model files", len(models))
     return models
 
 def list_image_bucket():
