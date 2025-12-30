@@ -54,7 +54,7 @@ def setup():
     t = trainer.Trainer(ratings_text, "ratings.pkl")
     t.run()
 
-    logger.info("Models saved in gs://%s", utils.gcs.MODEL_BUCKET)
+    logger.info("Models saved in gs://%s", utils.gcs.DATA_BUCKET)
 
 def _merge_requirements(source_data_list):
     """Merge a list of requirement dicts.
