@@ -13,13 +13,10 @@ from app.utils import gcs, common, data_files
 
 
 logger = logging.getLogger("app")
-
-
 screenshot_pool = None
 
-
 class DescriptionGenerator():
-	"""Generate a formatted game description consisting of
+	"""Generates formatted game description consisting of multiple items:
 	 * a title
 	 * >= 1 main description paragraphs
 	 * >= 0 sub sections with titles
@@ -28,11 +25,13 @@ class DescriptionGenerator():
 	 * developer name
 	"""
 
-	def __init__(self, config):
+	def __init__(self, context_config):
 		"""Create generators for each description component.
 		Model content is expected to be available in Cloud Storage.
+
+		Args:
+			context_config (dict): additional context to provide to the generator
 		"""
-		self.description_config = None
 		model_data = gcs._download_all_model_files()
 
 		# Helper function to create a Generator instance with its identity
@@ -41,6 +40,7 @@ class DescriptionGenerator():
 
 		self.generators = SimpleNamespace(
 			description=create_generator("description"),
+			names=create_generator("names"),
 			feature=create_generator("feature"),
 			tagline=create_generator("tagline"),
 
@@ -55,14 +55,16 @@ class DescriptionGenerator():
 			)
 		)
 
-		self.ENABLE_SEMANTIC_CONTEXT = config.get("ENABLE_SEMANTIC_CONTEXT", False)
+		self.ENABLE_SEMANTIC_CONTEXT = context_config.get("ENABLE_SEMANTIC_CONTEXT", False)
 		if self.ENABLE_SEMANTIC_CONTEXT:
 			logger.info("Semantic context enabled for description generation.")
 
 	def __call__(self):
 		"""Generate a description with random number of paragraphs and content types."""
 		# Randomize a new content config for each run
-		self.description_config = create_description_config()
+		config = create_description_config()
+		logger.debug(config)
+
 		seeds = data_files.SEEDS
 		tags = common.select_tags()
 
@@ -70,7 +72,7 @@ class DescriptionGenerator():
 
 		# Generate n paragraphs as main content
 		paragraphs = []
-		for _ in range(self.description_config.num_paragraphs):
+		for _ in range(config.num_paragraphs):
 			size = int(abs(random.gauss(15, 3)))
 			seed = random.choice(seeds["text"])
 
@@ -86,13 +88,13 @@ class DescriptionGenerator():
 			)
 
 		description.append({
-			"title": generate_title(),
+			"title": self.generate_title(enable_extended_vocabulary=config.extended_title),
 			"content": "\n\n".join(paragraphs)
 		})
 
 		# Repeat for sub sections if included in the config;
 		# 1 paragraph per section
-		for _ in range(self.description_config.num_subsections):
+		for _ in range(config.num_subsections):
 			seed = random.choice(seeds["headers"])
 			header = self.generators.description.generate(
 				seed=seed, size=3, continue_until_valid=True
@@ -116,7 +118,7 @@ class DescriptionGenerator():
 
 		# List of features
 		features = []
-		for _ in range(self.description_config.num_features):
+		for _ in range(config.num_features):
 			# set a shorthish upper bound
 			size = min(int(abs(random.gauss(12, 4))), 22)
 			features.append(
@@ -125,7 +127,7 @@ class DescriptionGenerator():
 
 		# Tagline
 		tagline = ""
-		if self.description_config.tagline:
+		if config.tagline:
 			tagline = self.generators.tagline.generate(size=4, complete_sentence=True)
 
 		# System requirements;
@@ -164,7 +166,7 @@ class DescriptionGenerator():
 		]
 
 		# add other categories only if specified in the config
-		if self.description_config.system_requirements.sound_card:
+		if config.system_requirements.sound_card:
 			system_requirements.append(
 				{
 					"name": "Sound Card",
@@ -174,7 +176,7 @@ class DescriptionGenerator():
 				}
 			)
 
-		if self.description_config.system_requirements.additional_notes:
+		if config.system_requirements.additional_notes:
 			system_requirements.append(
 				{
 					"name": "Additional Notes",
@@ -190,7 +192,6 @@ class DescriptionGenerator():
 		global screenshot_pool
 		# Lazy load the screenshot pool on first use
 		if screenshot_pool is None:
-			logger.info("Loading screenshot pool...")
 			screenshot_pool = gcs.list_image_bucket()
 
 		screenshots = select_screenshots(screenshot_pool, tags)
@@ -207,6 +208,34 @@ class DescriptionGenerator():
 
 		# return a json serializable dict
 		return dataclasses.asdict(description_model)
+
+	def generate_title(self, enable_extended_vocabulary=False):
+		"""Generate a title.
+
+		A title is a rendered template using either POS tagged words
+		or generated words.
+
+		Args:
+			enable_extended_vocabulary (boolean): whether to include generated
+				words to the title
+		Return:
+			the title
+		"""
+		template = random.choice(data_files.TITLE_TEMPLATES).rstrip()
+
+		if enable_extended_vocabulary:
+			size = max(5, int(abs(random.gauss(6, 2.5))))
+			# generate a word until we get one with alphabethic only characters
+			for _ in range(10):
+				word = self.generators.names.generate(size=size).replace(" ", "")
+				if re.match(r"^[a-zA-Z]*$", word):
+					break
+
+			# replace the first token with the word
+			m = re.search(r"{{[A-Z]+}}", template)
+			template = template.replace(m.group(), word)
+
+		return _render_template(template).strip("- ").title()
 
 def create_description_config():
 	"""Create a randomized description config for what the generated content
@@ -226,6 +255,7 @@ def create_description_config():
 	num_subsections = random.randint(1,2) if num_features == 0 else 0
 
 	return model_specs.DescriptionConfig(
+		extended_title=random.randint(0,1),
         num_paragraphs=random.randint(1,2),
         num_features=num_features,
         num_subsections=num_subsections,
@@ -278,7 +308,7 @@ def _render_template(template):
 		else:
 			word = random.choice(pos_map[tags[0]])
 
-		template = template.replace("{{?}}", word)
+		template = template.replace("{{?}}", word).strip()
 
 	# otherwise extract the tag from the token and fill accordingly
 	for tag_template in re.findall("{{[A-Z]+}}", template):
@@ -299,15 +329,6 @@ def generate_developer():
 	template = random.choice(data_files.DEVELOPER_TEMPLATES).rstrip()
 	return _render_template(template).strip("- ").title()
 
-def generate_title():
-	"""Generate a game title by filling a random title template.
-
-	Return:
-		the rendered title
-	"""
-	template = random.choice(data_files.TITLE_TEMPLATES).rstrip()
-	return _render_template(template).strip("- ").title()
-
 def select_screenshots(screenshot_pool, tags):
 	"""Select screenshots from the screenshot pool matching given tags.
 	
@@ -323,13 +344,13 @@ def select_screenshots(screenshot_pool, tags):
 	matching_genre_blobs = [b for b in screenshot_pool if f"{tags.genre}/" in b.name]
 
 	if matching_full_blobs:
-		logger.info("Found matching screenshots.")
+		logger.debug("Found matching screenshots.")
 		screenshot_blobs = matching_full_blobs
 	elif matching_genre_blobs:
-		logger.info("Found matching screenshots for the genre.")
+		logger.debug("Found matching screenshots for the genre.")
 		screenshot_blobs = matching_genre_blobs
 	else:
-		logger.info("No matching screenshots found.")
+		logger.debug("No matching screenshots found.")
 		return []
 
 	# Split the blobs into 1 artwork and 1-n screenshots
@@ -339,7 +360,7 @@ def select_screenshots(screenshot_pool, tags):
 	SIZE = min(random.randint(1,2), len(screenshot_blobs))
 	screenshots = random.sample(screenshot_blobs, SIZE)
 	if artwork_blobs:
-		logger.info("Adding artwork.")
+		logger.debug("Found matching artwork.")
 		screenshots = [random.choice(artwork_blobs)] + screenshots
 
 	return screenshots

@@ -12,6 +12,7 @@ class _SystemRequirementsConfig:
 @dataclass
 class DescriptionConfig:
     """Model for main description configuration."""
+    extended_title: bool
     num_paragraphs: int
     num_features: int
     num_subsections: int

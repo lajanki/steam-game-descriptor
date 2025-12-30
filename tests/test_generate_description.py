@@ -10,11 +10,9 @@ with patch("google.cloud.storage.Client"):
 
 @pytest.fixture
 def mock_generator():
-    """Create a mock Generator class"""
     with patch("app.generator.generator.Generator") as MockGenerator:
         mock_gen_instance = MagicMock()
         MockGenerator.return_value = mock_gen_instance
-        #MockGenerator.side_effect = lambda model_data: mock_gen_instance
         yield MockGenerator
 
 
@@ -32,30 +30,79 @@ def test_generated_description_schema(mock_generator):
 
     jsonschema.validate(instance=g(), schema=schema)
 
+def test_render_template_with_no_tokens():
+    """Template rendering should return the original value
+    when there's no tokens to replace.
+    """
+    rendered = generate_description._render_template("A B C")
+    assert rendered == "A B C"
+
 @patch("random.randint")
 @patch("random.choice")
-def test_developer_generation_open(mock_random_choice, mock_random_randint):
-    """Test developer template filling with 'open' (ie. {{}} selection."""
+def test_render_template_with_open_token(mock_choice, mock_randint):
+    """Test template rendering with {{}} token."""
 
-    # Mock random.X calls to return 2 replacement words
-    mock_random_randint.return_value = 2
-    mock_random_choice.side_effect = ["{{}} System Works", "A", "B"]
+    # mock random calls to select 2 items
+    mock_randint.return_value = 2
+    mock_choice.side_effect = ["A", "B"]
 
-    res = generate_description.generate_developer()
-    assert res == "A B System Works"
+    template = "{{}} System Works"
+    rendered = generate_description._render_template(template)
+    assert rendered == "A B System Works"
+
+@patch("random.randint")
+@patch("random.choice")
+def test_render_template_with_undetermined_token(mock_choice, mock_randint):
+    """Test template rendering with {{?}} token."""
+
+    # One replacement items
+    mock_randint.return_value = 1
+    mock_choice.return_value = "A"
+
+    template = "{{?}} Gaming"
+    rendered = generate_description._render_template(template)
+    assert rendered == "A Gaming"
+
+    # No replacement items
+    mock_randint.return_value = 0
+
+    template = "{{?}} Gaming"
+    rendered = generate_description._render_template(template)
+    assert rendered == "Gaming"
 
 @patch("random.sample")
-@patch("random.randint")
+def test_render_template_with_determined_token(mock_sample):
+    """Test template rendering with known tokens like {{NOUN}}."""
+    mock_sample.side_effect = [["A", "B"], ["C"]]
+
+    template = "{{VERB}} of the {{NOUN}}"
+    rendered = generate_description._render_template(template)
+    assert rendered == "A B of the C"
+
 @patch("random.choice")
-def test_developer_generation_undetermined(mock_random_choice, mock_random_randint, mock_random_sample):
-    """Test developer template filling with 'undetermined' (ie. {{?}}) selection."""
+def test_title_generation_with_extended_vocabulary(mock_choice, mock_generator):
+    """Test title template filling with generated words."""
 
-    mock_random_randint.side_effect = [1, 1]
-    mock_random_choice.side_effect = ["{{?}} {{NOUN}} Gaming", "A"]
-    mock_random_sample.return_value = "B"
+    with patch("app.utils.gcs._download_all_model_files"):
+        g = generate_description.DescriptionGenerator(MagicMock())
 
-    res = generate_description.generate_developer()
-    assert res == "A B Gaming"
+    # Template with one token
+    mock_generator().generate.side_effect = ["Ad-numbus", "Jessoor"]
+    mock_choice.return_value = "{{NOUN}} Realms"
+
+    title = g.generate_title(enable_extended_vocabulary=True)
+    # the first generated word should be discarded as non-alphabetic
+    assert title == "Jessoor Realms"
+
+
+    # Template with multiple tokens; the first token should be replaced
+    # by the generated word
+    mock_generator().generate.side_effect = ["Ichor"]
+    mock_choice.return_value = "{{ADJ}} {{NOUN}}"
+    title = g.generate_title(enable_extended_vocabulary=True)
+
+    assert title.startswith("Ichor")
+    assert "{{NOUN}}" not in title
 
 def test_number_of_paragraphs_in_config():
     """Test exclusivity of features and subsections in the config:

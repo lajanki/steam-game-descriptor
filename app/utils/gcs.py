@@ -98,4 +98,6 @@ def list_image_bucket():
     """
     # Always list the contents from the production bucket
     image_bucket = IMG_BUCKET.replace("dev_", "prod_")
+    logger.info("Loading screenshots from gs://%s", image_bucket)
+
     return list(gcs_client.list_blobs(image_bucket))
