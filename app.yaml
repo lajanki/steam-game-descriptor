@@ -1,6 +1,6 @@
 service: game-descriptor
 runtime: python310
-instance_class: F4  # 1536 MB of memory
+instance_class: F2
 service_account: game-descriptor-worker@webhost-common.iam.gserviceaccount.com
 entrypoint: gunicorn -b :$PORT app.views:app --timeout 180
 

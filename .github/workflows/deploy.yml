@@ -31,7 +31,7 @@ jobs:
     # Export a legacy requirements file for App Engine
     - name: Export requirements.txt
       run: |
-        uv export > requirements.txt
+        uv export --no-group dev --no-install-project > requirements.txt
 
     - name: Upload requirements.txt
       uses: actions/upload-artifact@v4
