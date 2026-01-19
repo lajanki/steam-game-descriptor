@@ -23,7 +23,7 @@ The application consists of three parts:
 ![Webapp flows](./overview.png)
 
  
-Hosted on Google App Engine.
+Hosted on Google Cloud Run.
 
 
 ## Running locally
@@ -88,5 +88,5 @@ Unit tests can be run from the root folder with
 uv run pytest
 ```
 
-## Deploy to Google App Engine
-Deployed to App Engine through GitHub Actions workflow.
+## Deploy to Google Cloud Run
+Deployed as a Google Cloud Run service through GitHub Actions workflow.
