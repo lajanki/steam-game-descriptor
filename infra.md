@@ -8,7 +8,7 @@ gcloud --project webhost-common scheduler jobs create http game-descriptor-retra
     --time-zone "Europe/Helsinki" \
     --max-retry-attempts 1 \
     --uri https://game-descriptor-232474345248.europe-north1.run.app/_train \
-    --oidc-service-account-email game-descriptor-worker@webhost-common.iam.gserviceaccount.com \
+    --oidc-service-account-email job-trigger@webhost-common.iam.gserviceaccount.com \
     --oidc-token-audience https://game-descriptor-232474345248.europe-north1.run.app
 
 
@@ -23,7 +23,7 @@ gcloud --project webhost-common scheduler jobs create http game-descriptor-parse
     --max-retry-attempts 1 \
     --min-backoff "300s" \
     --uri https://game-descriptor-232474345248.europe-north1.run.app/_parse_descriptions?batch_size=150 \
-    --oidc-service-account-email game-descriptor-worker@webhost-common.iam.gserviceaccount.com \
+    --oidc-service-account-email job-trigger@webhost-common.iam.gserviceaccount.com \
     --oidc-token-audience https://game-descriptor-232474345248.europe-north1.run.app
 
 gcloud --project webhost-common scheduler jobs create http game-descriptor-generate-image \
@@ -33,6 +33,6 @@ gcloud --project webhost-common scheduler jobs create http game-descriptor-gener
     --location europe-west1 \
     --time-zone "Europe/Helsinki" \
     --uri https://game-descriptor-232474345248.europe-north1.run.app/_generate_image \
-    --oidc-service-account-email game-descriptor-worker@webhost-common.iam.gserviceaccount.com \
+    --oidc-service-account-email job-trigger@webhost-common.iam.gserviceaccount.com \
     --oidc-token-audience https://game-descriptor-232474345248.europe-north1.run.app
 ```

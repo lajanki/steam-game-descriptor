@@ -23,7 +23,7 @@ BASE = os.path.dirname(__file__)
 
 
 # Load default environment variables. This will not override existing variables.
-load_dotenv(".env.dev")
+load_dotenv("vars.dev.env")
 
 # Load a pre-trained Spacy language model.
 # Disable specific pipeline component to speedup similarity inference 
