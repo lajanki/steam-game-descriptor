@@ -58,5 +58,6 @@ jobs:
             --region europe-north1 \
             --source . \
             --env-vars-file vars.prod.env \
+            --update-secrets OPENAI_API_KEY=steam-game-descriptor-openai-key:latest \
             --memory 768Mi \
             --service-account game-descriptor-worker@webhost-common.iam.gserviceaccount.com
