@@ -85,8 +85,12 @@ def _create_image(prompt, metadata={}):
     Return:
         bytes: The generated image data with embedded metadata.
     """
+
+    # The API key is set during production deployment.
+    # We expect it to be available as an environment variable.
+    api_key = os.environ["OPENAI_API_KEY"]
     client = OpenAI(
-        api_key=common.get_openai_secret()
+        api_key=api_key
     )
 
     response = client.images.generate(

@@ -28,18 +28,6 @@ jobs:
       run: |
         uv run pytest
 
-    # Export a legacy requirements file for App Engine
-    - name: Export requirements.txt
-      run: |
-        uv export --no-group dev --no-install-project > requirements.txt
-
-    - name: Upload requirements.txt
-      uses: actions/upload-artifact@v4
-      with:
-        name: requirements_exports
-        path: requirements.txt
-
-
   deploy:
     runs-on: ubuntu-latest
     needs: test
@@ -64,12 +52,12 @@ jobs:
         with:
           project_id: webhost-common
 
-
-      - name: Download requirements.txt
-        uses: actions/download-artifact@v4
-        with:
-          name: requirements_exports
-
-      # Deploy the service.
       - name: Deploy to App Engine
-        run: gcloud app deploy
+        run: |
+          gcloud run deploy game-descriptor \
+            --region europe-north1 \
+            --source . \
+            --env-vars-file vars.prod.env \
+            --update-secrets OPENAI_API_KEY=steam-game-descriptor-openai-key:latest \
+            --memory 768Mi \
+            --service-account game-descriptor-worker@webhost-common.iam.gserviceaccount.com
