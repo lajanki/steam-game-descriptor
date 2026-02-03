@@ -1,5 +1,4 @@
 # steam-game-descriptor
-[https://game-descriptor-dot-webhost-common.nw.r.appspot.com/](https://game-descriptor-dot-webhost-common.nw.r.appspot.com/)
 
 A Flask based webapp for generating random game descriptions modeled after Steam store. 
 
@@ -20,10 +19,10 @@ The application consists of three parts:
  1. **text generation**  
     The user facing side of the webapp. This involves fetching the model and querying it for a sequence of words:
 
-![Webapp flows](./overview.png)
+![Webapp flows](./overview.drawio.png)
 
  
-Hosted on Google App Engine.
+Hosted on Google Cloud Run.
 
 
 ## Running locally
@@ -39,17 +38,31 @@ Then, run in localhost with
 uv run flask --app app.views:app run --debug
 ```
 
-Maitenance requests for training new models can be tested locally by settings required headers with something like:
+Backend endpoints for parsing new training content as well as training new models are
+secured with OIDC authentication. Requests are accepted with the correct authentication
+headers.
+
+For instance, to parse new content run:
 ```shell
-curl "127.0.0.1:5000/_parse_descriptions?batch_size=40" -H "X-Appengine-Cron: 1"
+token=$(gcloud --project webhost-common auth print-identity-token \
+  --impersonate-service-account="job-trigger@webhost-common.iam.gserviceaccount.com" \
+  --audiences="https://game-descriptor-232474345248.europe-north1.run.app" \
+  --include-email)
+
+curl -X POST "127.0.0.1:5000/_parse_descriptions?batch_size=10" -H "Authorization: Bearer $token"
 ```
-for parsing a new batch of game descriptions from Steam Store.
+This sends a valid token along with the request.
+
+> [!NOTE]
+> In most cases it's easier to run the maintenance tasks locally without Flask application context,
+see below.
+
 
 ### Running locally in production mode
-When run locally, text models will be loaded from (and saved to) a dedicated dev bucket in Cloud Storage.
+When run locally, training data is loaded from a dedicated dev bucket in Cloud Storage.
 To run the app locally against production backend, override the environment with
 ```shell
-uv run flask -e .env.prod --app app.views:app run --debug
+uv run flask -e vars.prod.env --app app.views:app run --debug
 ```
 
 ### Enable semantic context similarity
@@ -88,5 +101,5 @@ Unit tests can be run from the root folder with
 uv run pytest
 ```
 
-## Deploy to Google App Engine
-Deployed to App Engine through GitHub Actions workflow.
+## Deploy to Google Cloud Run
+Deployed as a Google Cloud Run service through GitHub Actions workflow.
