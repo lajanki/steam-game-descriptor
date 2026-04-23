@@ -52,7 +52,7 @@ jobs:
         with:
           project_id: webhost-common
 
-      - name: Deploy to App Engine
+      - name: Deploy to Cloud Run
         run: |
           gcloud run deploy game-descriptor \
             --region europe-north1 \
