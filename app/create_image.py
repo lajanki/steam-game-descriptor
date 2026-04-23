@@ -94,10 +94,11 @@ def _create_image(prompt, metadata={}):
     )
 
     response = client.images.generate(
+        model="gpt-image-1.5",
         prompt=prompt,
         n=1,
-        size="256x256",
-        response_format="b64_json"
+        size="1024x1024",
+        quality="low",
     )
     image_response_data = response.data[0].b64_json
     image_bytes = base64.b64decode(image_response_data)
