@@ -48,6 +48,8 @@ def select_tags():
 def get_closest_word_match(context, choices):
     """Find the word in a list of choices that is semantically closest 
     to it.
+    Requires the "spacy" optional dependencies to be installed.
+
     Args:
         context (str): the word to find a match for
         choices (list): the list to look for the match

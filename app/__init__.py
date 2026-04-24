@@ -1,7 +1,11 @@
 import logging
 import os
 
-import spacy
+try:
+	import spacy
+	SPACY_AVAILABLE = True
+except ImportError:
+	SPACY_AVAILABLE = False
 from dotenv import load_dotenv
 
 
@@ -25,7 +29,11 @@ BASE = os.path.dirname(__file__)
 # Load default environment variables. This will not override existing variables.
 load_dotenv("vars.dev.env")
 
-# Load a pre-trained Spacy language model.
+# Load a pre-trained Spacy language model if available.
 # Disable specific pipeline component to speedup similarity inference 
 # https://spacy.io/usage/processing-pipelines#pipelines
-nlp = spacy.load("en_core_web_md", exclude=["ner", "parser"])
+if SPACY_AVAILABLE:
+	nlp = spacy.load("en_core_web_md", exclude=["ner", "parser"])
+else:
+	nlp = None
+	logger.warning("spaCy is not installed. NLP features are disabled.")
