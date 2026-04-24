@@ -2,8 +2,6 @@
 
 import random
 
-from google.cloud import secretmanager
-
 from app.utils.data_files import GENRES
 from app import nlp, model_specs
 
@@ -64,11 +62,3 @@ def get_closest_word_match(context, choices):
         return nlp(context).similarity(nlp(item))
 
     return sorted(choices, key=_similarity_key)[-1]
-
-def get_openai_secret():
-    """Fetch OpenAI API key from Secret Manager."""
-    client = secretmanager.SecretManagerServiceClient()
-    response = client.access_secret_version(
-        name="projects/webhost-common/secrets/steam-game-descriptor-openai-key/versions/latest"
-    )
-    return response.payload.data.decode()
