@@ -2,7 +2,7 @@ import logging
 import random
 import pickle
 
-from app import utils
+from app.utils import common
 
 
 DEFAULT_TEXT_LENGTH = 25
@@ -118,7 +118,7 @@ class Generator:
 		if len(choices) == 1:
 			next_word = next(iter(choices))
 		elif len(choices) > 1 and context:
-			next_word = utils.get_closest_word_match(context, choices)
+			next_word = common.get_closest_word_match(context, choices)
 		else:
 			next_word = random.choice(list(choices))
 

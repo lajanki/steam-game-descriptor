@@ -35,5 +35,7 @@ load_dotenv("vars.dev.env")
 if SPACY_AVAILABLE:
 	nlp = spacy.load("en_core_web_md", exclude=["ner", "parser"])
 else:
+    # Assign a dummy value for nlp to avoid hard errors in he webserver.
+	# as well as allowing tests to import nlp object.
 	nlp = None
 	logger.warning("spaCy is not installed. NLP features are disabled.")
