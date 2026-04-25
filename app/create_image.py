@@ -107,13 +107,16 @@ def _create_image(prompt, metadata={}):
     image_fp = BytesIO(image_bytes)
     image = Image.open(image_fp)
 
+    # Resize to 512x512
+    image = image.resize((512, 512), Image.LANCZOS)
+
     # Add metadata as tags
     img_metadata = PngInfo()
     for key, value in metadata.items():
         img_metadata.add_text(key, value)
 
-    # Create a new file pointer to avoid data corruption issues
-    output_image_fp = BytesIO(image_bytes)
+    # Create a new file pointer with the image and metadata
+    output_image_fp = BytesIO()
     image.save(output_image_fp, format="PNG", pnginfo=img_metadata)
 
     output_image_fp.seek(0)
