@@ -71,7 +71,12 @@ An optional semantic context can be enabled in which the most similar word is ch
 to choose from.
 
 This is implemented via [spaCy](https://spacy.io/) NLP library, but does introduce a delay on text generation.
-To enable, set `FLASK_ENABLE_SEMANTIC_CONTEXT` environment variable:
+To enable, install with the optional spaCy dependencies:
+```shell
+uv sync --extra spacy
+```
+
+Then, run with the `FLASK_ENABLE_SEMANTIC_CONTEXT` environment variable set:
 ```shell
 FLASK_ENABLE_SEMANTIC_CONTEXT=1 uv run flask --app app.views:app run --debug
 ```
